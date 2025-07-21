@@ -48,25 +48,24 @@ export default function LoginPage() {
     },
   });
 
-  const onSubmit = (data: LoginFormValues) => {
+  const onSubmit = async (data: LoginFormValues) => {
     setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      if (login(data.email, data.password)) {
-        toast({
-          title: "Login Successful",
-          description: "Welcome back!",
-        });
-        router.push('/admin');
-      } else {
-        toast({
-          variant: "destructive",
-          title: "Login Failed",
-          description: "Invalid email or password.",
-        });
-        setIsLoading(false);
-      }
-    }, 1000);
+    const result = await login(data.email, data.password);
+    
+    if (result.success) {
+      toast({
+        title: "Login Successful",
+        description: "Welcome back!",
+      });
+      router.push('/admin');
+    } else {
+      toast({
+        variant: "destructive",
+        title: "Login Failed",
+        description: result.message,
+      });
+      setIsLoading(false);
+    }
   };
 
   return (

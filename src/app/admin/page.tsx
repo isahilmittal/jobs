@@ -1,12 +1,13 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { type User } from "firebase/auth";
 
 import {
   ColumnDef,
@@ -19,7 +20,9 @@ import {
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 
-import { Job } from "@/lib/types";
+import { Job, EnrichedApplicant } from "@/lib/types";
+import { getJobs, addJob, updateJob, deleteJob } from "@/lib/jobs";
+import { getEnrichedApplicants } from "@/lib/applicants";
 import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -61,6 +64,7 @@ import {
   Card,
   CardContent,
   CardDescription,
+  CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -68,7 +72,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { logout, getAuthenticatedUser, addAdminUser, getAllAdminUsers, deleteAdminUser, type AdminUser, type UserRole } from "@/lib/auth";
+import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
 
 type AdminStaff = Omit<AdminUser, 'password'>;
 
@@ -84,10 +88,11 @@ function AdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: UserRole } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ user: User; role: UserRole } | null>(null);
   const [adminStaff, setAdminStaff] = useState<AdminStaff[]>([]);
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [applicantCount, setApplicantCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
   const { toast } = useToast();
@@ -97,59 +102,55 @@ function AdminPage() {
     defaultValues: { email: "", password: "" },
   });
   
-  useEffect(() => {
-    const user = getAuthenticatedUser();
-    setCurrentUser(user);
-    if(user?.role === 'SUPER_ADMIN') {
-        setAdminStaff(getAllAdminUsers());
-    }
-
-    const storedJobs = localStorage.getItem('jobs');
-    if (storedJobs) {
-      setJobs(JSON.parse(storedJobs).map((j: Job) => ({...j, createdAt: new Date(j.createdAt)})));
-    }
+  const fetchData = useCallback(async () => {
+    setIsLoading(true);
+    const userWithRole = await getCurrentUserWithRole();
+    setCurrentUser(userWithRole);
     
-    const storedApplicants = localStorage.getItem('applicants');
-    if (storedApplicants) {
-      setApplicantCount(JSON.parse(storedApplicants).length);
+    if (userWithRole?.role === 'SUPER_ADMIN') {
+        setAdminStaff(await getAllAdminUsers());
     }
 
+    const [fetchedJobs, fetchedApplicants] = await Promise.all([
+      getJobs(),
+      getEnrichedApplicants(),
+    ]);
+
+    setJobs(fetchedJobs);
+    setApplicantCount(fetchedApplicants.length);
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('jobs', JSON.stringify(jobs));
-  }, [jobs]);
+    ensureSuperAdminExists();
+    fetchData();
+  }, [fetchData]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
-  const handleAddJob = (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
-    const adminUser = getAuthenticatedUser();
-    if (!adminUser) {
-      alert("You must be logged in to create a job.");
+  const handleAddJob = async (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
+    if (!currentUser) {
+      toast({variant: "destructive", title: "Error", description: "You must be logged in to create a job."});
       router.push('/login');
       return;
     }
-
-    const newJob: Job = {
+    await addJob({
       ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-      createdBy: adminUser.email,
-    };
-    setJobs((prevJobs) => [newJob, ...prevJobs]);
+      createdBy: currentUser.user.email!,
+    });
+    toast({title: "Success", description: "Job posted successfully."});
+    fetchData();
   };
 
-  const handleEditJob = (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
+  const handleEditJob = async (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
     if (!jobToEdit) return;
-    setJobs((prevJobs) =>
-      prevJobs.map((job) =>
-        job.id === jobToEdit.id ? { ...job, ...data, id: jobToEdit.id, createdAt: jobToEdit.createdAt, createdBy: jobToEdit.createdBy } : job
-      )
-    );
+    await updateJob(jobToEdit.id, data);
     setJobToEdit(null);
+    toast({title: "Success", description: "Job updated successfully."});
+    fetchData();
   };
   
   const openEditForm = (job: Job) => {
@@ -162,16 +163,18 @@ function AdminPage() {
     setIsFormOpen(true);
   };
   
-  const handleDeleteJob = (jobId: string) => {
-    setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
+  const handleDeleteJob = async (jobId: string) => {
+    await deleteJob(jobId);
+    toast({title: "Success", description: "Job deleted successfully."});
+    fetchData();
   };
 
-  const handleAddAdmin = (data: AddAdminFormValues) => {
+  const handleAddAdmin = async (data: AddAdminFormValues) => {
     setIsAddingUser(true);
-    const result = addAdminUser({ ...data, role: 'ADMIN' });
+    const result = await addAdminUser(data.email, data.password);
     if(result.success) {
       toast({ title: "Success", description: result.message });
-      setAdminStaff(getAllAdminUsers());
+      setAdminStaff(await getAllAdminUsers());
       addAdminForm.reset();
     } else {
       toast({ variant: "destructive", title: "Error", description: result.message });
@@ -179,11 +182,11 @@ function AdminPage() {
     setIsAddingUser(false);
   };
 
-  const handleDeleteAdmin = (email: string) => {
-    const result = deleteAdminUser(email);
+  const handleDeleteAdmin = async (uid: string) => {
+    const result = await deleteAdminUser(uid);
      if(result.success) {
       toast({ title: "Success", description: result.message });
-      setAdminStaff(getAllAdminUsers());
+      setAdminStaff(await getAllAdminUsers());
     } else {
       toast({ variant: "destructive", title: "Error", description: result.message });
     }
@@ -261,8 +264,8 @@ function AdminPage() {
             <AlertDialog>
                 <AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button></AlertDialogTrigger>
                 <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>Delete Admin?</AlertDialogTitle><AlertDialogDescription>This will remove their access. This action cannot be undone.</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteAdmin(user.email)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Yes, delete admin</AlertDialogAction></AlertDialogFooter>
+                <AlertDialogHeader><AlertDialogTitle>Delete Admin?</AlertDialogTitle><AlertDialogDescription>This will remove their access role. This action cannot be undone. You will also need to delete them from Firebase Authentication.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteAdmin(user.uid)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Yes, delete admin</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
         )
@@ -272,6 +275,14 @@ function AdminPage() {
   const jobTable = useReactTable({ data: jobs, columns: jobColumns, getCoreRowModel: getCoreRowModel(), getPaginationRowModel: getPaginationRowModel(), onSortingChange: setSorting, getSortedRowModel: getSortedRowModel(), state: { sorting } });
   const adminTable = useReactTable({ data: adminStaff, columns: adminColumns, getCoreRowModel: getCoreRowModel() });
 
+
+  if(isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <>
@@ -283,11 +294,11 @@ function AdminPage() {
                 <Briefcase className="h-6 w-6 text-primary" />
                 <h1 className="text-lg font-bold">Admin Dashboard</h1>
                </Link>
-               <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">Jobs</Link>
+               <Link href="/admin" className="font-bold text-foreground transition-colors hover:text-foreground">Jobs</Link>
                <Link href="/admin/applicants" className="text-muted-foreground transition-colors hover:text-foreground">Applicants</Link>
             </nav>
              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground hidden md:inline">Welcome, {currentUser?.email}</span>
+                <span className="text-sm text-muted-foreground hidden md:inline">Welcome, {currentUser?.user.email}</span>
                 <Badge variant={currentUser?.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{currentUser?.role}</Badge>
                 <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" />Logout</Button>
             </div>
@@ -328,7 +339,7 @@ function AdminPage() {
                         <Users className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{adminStaff.length + 1}</div>
+                        <div className="text-2xl font-bold">{adminStaff.length}</div>
                         <p className="text-xs text-muted-foreground">Users with admin access</p>
                     </CardContent>
                 </Card>
@@ -356,7 +367,7 @@ function AdminPage() {
                           </CardContent>
                       </Card>
                        <Card>
-                          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" />Add New Admin</CardTitle><CardDescription>Create a new administrator account.</CardDescription></CardHeader>
+                          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" />Add New Admin</CardTitle><CardDescription>Create a new administrator account in Firebase Authentication and assign them an admin role.</CardDescription></CardHeader>
                           <CardContent>
                             <Form {...addAdminForm}>
                                 <form onSubmit={addAdminForm.handleSubmit(handleAddAdmin)} className="space-y-4">

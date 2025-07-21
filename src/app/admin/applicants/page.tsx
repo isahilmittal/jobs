@@ -13,7 +13,7 @@ import {
   useReactTable,
 } from "@tanstack/react-table";
 import { format } from "date-fns";
-import { Applicant, EnrichedApplicant, Job } from "@/lib/types";
+import { EnrichedApplicant } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -24,43 +24,41 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, FileText, LogOut, User } from "lucide-react";
+import { ArrowUpDown, Briefcase, FileText, LogOut, User, Loader2 } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { getAuthenticatedUser, logout } from "@/lib/auth";
+import { getCurrentUserWithRole, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
+import { getEnrichedApplicants } from "@/lib/applicants";
+import type { User as FirebaseUser } from "firebase/auth";
+import type { UserRole } from "@/lib/auth";
 
 function ApplicantsPage() {
   const [applicants, setApplicants] = useState<EnrichedApplicant[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [currentUser, setCurrentUser] = useState<{ email: string; role: string } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ user: FirebaseUser; role: UserRole } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
 
   useEffect(() => {
-    const user = getAuthenticatedUser();
-    setCurrentUser(user);
-    
-    const storedApplicants = localStorage.getItem('applicants');
-    const storedJobs = localStorage.getItem('jobs');
-    
-    if (storedApplicants && storedJobs) {
-      const allApplicants: Applicant[] = JSON.parse(storedApplicants);
-      const allJobs: Job[] = JSON.parse(storedJobs);
-      
-      const jobsMap = new Map(allJobs.map(job => [job.id, job.title]));
-      
-      const enrichedApplicants = allApplicants.map(applicant => ({
-        ...applicant,
-        appliedAt: new Date(applicant.appliedAt),
-        jobTitle: jobsMap.get(applicant.jobId) || "Unknown Job",
-      })).sort((a, b) => b.appliedAt.getTime() - a.appliedAt.getTime());
-      
-      setApplicants(enrichedApplicants);
+    async function fetchData() {
+        setIsLoading(true);
+        const user = await getCurrentUserWithRole();
+        if(!user) {
+            router.push('/login');
+            return;
+        }
+        setCurrentUser(user);
+        
+        const fetchedApplicants = await getEnrichedApplicants();
+        setApplicants(fetchedApplicants);
+        setIsLoading(false);
     }
-  }, []);
+    fetchData();
+  }, [router]);
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logout();
     router.push('/login');
   };
 
@@ -108,6 +106,14 @@ function ApplicantsPage() {
     state: { sorting },
   });
 
+  if (isLoading) {
+    return (
+        <div className="flex justify-center items-center h-screen bg-background">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      );
+  }
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-muted-foreground">
        <header className="bg-card/80 border-b sticky top-0 z-10 backdrop-blur-sm">
@@ -118,10 +124,10 @@ function ApplicantsPage() {
                 <h1 className="text-lg font-bold">Admin Dashboard</h1>
                </Link>
                <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">Jobs</Link>
-               <Link href="/admin/applicants" className="text-foreground transition-colors hover:text-foreground">Applicants</Link>
+               <Link href="/admin/applicants" className="font-bold text-foreground transition-colors hover:text-foreground">Applicants</Link>
             </nav>
              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground hidden md:inline">Welcome, {currentUser?.email}</span>
+                <span className="text-sm text-muted-foreground hidden md:inline">Welcome, {currentUser?.user.email}</span>
                 <Badge variant={currentUser?.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{currentUser?.role}</Badge>
                 <Button variant="ghost" size="sm" onClick={handleLogout}><LogOut className="mr-2 h-4 w-4" />Logout</Button>
             </div>

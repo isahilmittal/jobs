@@ -8,6 +8,8 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Job, Applicant } from '@/lib/types';
+import { getJob } from '@/lib/jobs';
+import { addApplicant } from '@/lib/applicants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,46 +49,38 @@ export default function JobApplicationPage() {
   });
 
   useEffect(() => {
-    if (id) {
-      const storedJobs = localStorage.getItem('jobs');
-      if (storedJobs) {
-        const jobs: Job[] = JSON.parse(storedJobs);
-        const currentJob = jobs.find(j => j.id === id);
-        if (currentJob) {
-          setJob({...currentJob, createdAt: new Date(currentJob.createdAt)});
-        }
+    async function fetchJob() {
+      if (id) {
+        const currentJob = await getJob(id);
+        setJob(currentJob);
       }
+      setIsLoading(false);
     }
-    setIsLoading(false);
+    fetchJob();
   }, [id]);
 
-  const onSubmit = (data: ApplicationFormValues) => {
+  const onSubmit = async (data: ApplicationFormValues) => {
     if (!job) return;
 
     setIsSubmitting(true);
-    // Simulate form submission
-    setTimeout(() => {
-      const newApplicant: Applicant = {
-        id: crypto.randomUUID(),
-        jobId: job.id,
-        name: data.name,
-        email: data.email,
-        resume: data.resume[0].name, // Storing file name for simplicity
-        coverLetter: data.coverLetter,
-        appliedAt: new Date(),
-      };
-
-      const storedApplicants = localStorage.getItem('applicants');
-      const applicants: Applicant[] = storedApplicants ? JSON.parse(storedApplicants) : [];
-      localStorage.setItem('applicants', JSON.stringify([...applicants, newApplicant]));
-      
-      setIsSubmitting(false);
-      toast({
-        title: 'Application Submitted!',
-        description: 'Thank you for applying. We will be in touch.',
-      });
-      router.push('/');
-    }, 1500);
+    
+    // In a real app, you would upload the resume to a file storage service (like Firebase Storage)
+    // and store the URL. For simplicity, we are still just storing the name.
+    
+    await addApplicant({
+      jobId: job.id,
+      name: data.name,
+      email: data.email,
+      resume: data.resume[0].name,
+      coverLetter: data.coverLetter,
+    });
+    
+    setIsSubmitting(false);
+    toast({
+      title: 'Application Submitted!',
+      description: 'Thank you for applying. We will be in touch.',
+    });
+    router.push('/');
   };
 
   if (isLoading) {
