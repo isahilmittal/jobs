@@ -66,7 +66,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2 } from "lucide-react";
+import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight } from "lucide-react";
 import withAuth from "@/components/with-auth";
 import { logout, getAuthenticatedUser, addAdminUser, getAllAdminUsers, deleteAdminUser, type AdminUser, type UserRole } from "@/lib/auth";
 
@@ -87,6 +87,7 @@ function AdminPage() {
   const [currentUser, setCurrentUser] = useState<{ email: string; role: UserRole } | null>(null);
   const [adminStaff, setAdminStaff] = useState<AdminStaff[]>([]);
   const [isAddingUser, setIsAddingUser] = useState(false);
+  const [applicantCount, setApplicantCount] = useState(0);
   
   const router = useRouter();
   const { toast } = useToast();
@@ -107,6 +108,12 @@ function AdminPage() {
     if (storedJobs) {
       setJobs(JSON.parse(storedJobs).map((j: Job) => ({...j, createdAt: new Date(j.createdAt)})));
     }
+    
+    const storedApplicants = localStorage.getItem('applicants');
+    if (storedApplicants) {
+      setApplicantCount(JSON.parse(storedApplicants).length);
+    }
+
   }, []);
 
   useEffect(() => {
@@ -271,10 +278,14 @@ function AdminPage() {
       <div className="flex flex-col min-h-screen bg-background text-muted-foreground">
         <header className="bg-card/80 border-b sticky top-0 z-10 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <Briefcase className="h-7 w-7 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
-            </Link>
+            <nav className="flex items-center gap-4 text-sm font-medium">
+               <Link href="/" className="flex items-center gap-2 text-foreground">
+                <Briefcase className="h-6 w-6 text-primary" />
+                <h1 className="text-lg font-bold">Admin Dashboard</h1>
+               </Link>
+               <Link href="/admin" className="text-muted-foreground transition-colors hover:text-foreground">Jobs</Link>
+               <Link href="/admin/applicants" className="text-muted-foreground transition-colors hover:text-foreground">Applicants</Link>
+            </nav>
              <div className="flex items-center gap-2">
                 <span className="text-sm text-muted-foreground hidden md:inline">Welcome, {currentUser?.email}</span>
                 <Badge variant={currentUser?.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{currentUser?.role}</Badge>
@@ -284,6 +295,46 @@ function AdminPage() {
         </header>
 
         <main className="container mx-auto px-4 py-8 flex-grow">
+          <section className="mb-12">
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+                        <Briefcase className="h-4 w-4 text-muted-foreground"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{jobs.length}</div>
+                        <p className="text-xs text-muted-foreground">Currently active job listings</p>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Total Applicants</CardTitle>
+                        <FileText className="h-4 w-4 text-muted-foreground"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{applicantCount}</div>
+                        <p className="text-xs text-muted-foreground">Applications received via internal form</p>
+                    </CardContent>
+                    <CardFooter>
+                       <Button asChild size="sm" variant="outline" className="w-full">
+                            <Link href="/admin/applicants">View Applicants <ArrowRight className="ml-2 h-4 w-4"/></Link>
+                        </Button>
+                    </CardFooter>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Admin Staff</CardTitle>
+                        <Users className="h-4 w-4 text-muted-foreground"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{adminStaff.length + 1}</div>
+                        <p className="text-xs text-muted-foreground">Users with admin access</p>
+                    </CardContent>
+                </Card>
+            </div>
+          </section>
+
           {currentUser?.role === 'SUPER_ADMIN' && (
               <section className="mb-12">
                   <div className="grid md:grid-cols-2 gap-8">

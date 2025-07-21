@@ -18,4 +18,8 @@ export type Applicant = {
   resume: string; // For simplicity, we'll store the file name or a placeholder
   coverLetter?: string;
   appliedAt: Date;
-}
+};
+
+export type EnrichedApplicant = Applicant & {
+  jobTitle: string;
+};
