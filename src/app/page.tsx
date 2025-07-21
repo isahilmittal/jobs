@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -153,11 +154,6 @@ export default function Home() {
               <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
             </Link>
             <div className="flex items-center gap-2">
-               <Link href="/admin">
-                <Button variant="ghost" size="icon">
-                  <Settings className="h-5 w-5" />
-                </Button>
-              </Link>
               <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Post a Job
@@ -245,3 +241,5 @@ export default function Home() {
     </>
   );
 }
+
+    
