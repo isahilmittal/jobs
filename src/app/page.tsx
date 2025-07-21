@@ -5,11 +5,11 @@ import { useState, useMemo, useEffect } from "react";
 import Link from "next/link";
 import { Job } from "@/lib/types";
 import { JobCard } from "@/components/job-card";
-import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Search, Tag, X, Briefcase, Star } from "lucide-react";
+import { Search, Tag, X, Briefcase, Star, LogIn } from "lucide-react";
+import { isAuthenticated } from "@/lib/auth";
 
 const initialJobs: Job[] = [
   {
@@ -20,6 +20,7 @@ const initialJobs: Job[] = [
     applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
+    createdBy: 'admin@example.com',
   },
   {
     id: "2",
@@ -28,6 +29,7 @@ const initialJobs: Job[] = [
     tags: ["Figma", "UX", "UI", "Prototyping"],
     applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
+    createdBy: 'manager@example.com',
   },
   {
     id: "3",
@@ -37,6 +39,7 @@ const initialJobs: Job[] = [
     applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 hours ago
+    createdBy: 'admin@example.com',
   },
   {
     id: "4",
@@ -45,6 +48,7 @@ const initialJobs: Job[] = [
     tags: ["Product Management", "AI", "Machine Learning", "Agile"],
     applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), // 1 day ago
+    createdBy: 'manager@example.com',
   },
   {
     id: "5",
@@ -54,6 +58,7 @@ const initialJobs: Job[] = [
     applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
+    createdBy: 'admin@example.com',
   },
   {
     id: "6",
@@ -63,6 +68,7 @@ const initialJobs: Job[] = [
     applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
+    createdBy: 'manager@example.com',
   },
   {
     id: "7",
@@ -71,17 +77,18 @@ const initialJobs: Job[] = [
     tags: ["Node.js", "React", "PostgreSQL", "GraphQL", "TypeScript"],
     applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
+    createdBy: 'admin@example.com',
   },
 ];
 
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
-  const [isFormOpen, setIsFormOpen] = useState(false);
-  const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isClient, setIsClient] = useState(false);
   
   useEffect(() => {
+    setIsClient(true);
     const storedJobs = localStorage.getItem('jobs');
     if (storedJobs && JSON.parse(storedJobs).length > 0) {
       setJobs(JSON.parse(storedJobs).map((j: Job) => ({...j, createdAt: new Date(j.createdAt)})));
@@ -91,46 +98,6 @@ export default function Home() {
     }
   }, []);
 
-  useEffect(() => {
-    // Only update localStorage if jobs have been loaded
-    if (jobs.length > 0) {
-      localStorage.setItem('jobs', JSON.stringify(jobs));
-    }
-  }, [jobs]);
-
-  const handleAddJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
-    const newJob: Job = {
-      ...data,
-      id: crypto.randomUUID(),
-      createdAt: new Date(),
-    };
-    setJobs((prevJobs) => [newJob, ...prevJobs]);
-  };
-
-  const handleEditJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
-    if (!jobToEdit) return;
-    setJobs((prevJobs) =>
-      prevJobs.map((job) =>
-        job.id === jobToEdit.id ? { ...job, ...data, id: jobToEdit.id, createdAt: jobToEdit.createdAt } : job
-      )
-    );
-    setJobToEdit(null);
-  };
-  
-  const openEditForm = (job: Job) => {
-    setJobToEdit(job);
-    setIsFormOpen(true);
-  };
-
-  const openAddForm = () => {
-    setJobToEdit(null);
-    setIsFormOpen(true);
-  };
-  
-  const handleDeleteJob = (jobId: string) => {
-    setJobs((prevJobs) => prevJobs.filter((job) => job.id !== jobId));
-  };
-  
   const toggleTagSelection = (tag: string) => {
     setSelectedTags(prev => 
       prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
@@ -152,6 +119,8 @@ export default function Home() {
     }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }, [jobs, searchQuery, selectedTags]);
 
+  const showAdminLogin = isClient && !isAuthenticated();
+
   return (
     <>
       <div className="flex flex-col min-h-screen bg-background">
@@ -161,15 +130,14 @@ export default function Home() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
             </Link>
-            <div className="flex items-center gap-2">
-              <Button asChild variant="outline" size="sm">
-                  <Link href="/admin">Admin</Link>
+            {showAdminLogin && (
+               <Button asChild variant="outline" size="sm">
+                  <Link href="/login">
+                    <LogIn className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </Link>
               </Button>
-              <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground">
-                <PlusCircle className="mr-2 h-5 w-5" />
-                Post a Job
-              </Button>
-            </div>
+            )}
           </div>
         </header>
 
@@ -224,7 +192,7 @@ export default function Home() {
           {filteredJobs.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredJobs.map((job) => (
-                <JobCard key={job.id} job={job} onEdit={openEditForm} onDelete={handleDeleteJob} />
+                <JobCard key={job.id} job={job} showAdminActions={false} />
               ))}
             </div>
           ) : (
@@ -242,13 +210,6 @@ export default function Home() {
           </div>
         </footer>
       </div>
-
-      <JobForm 
-        isOpen={isFormOpen} 
-        onOpenChange={setIsFormOpen}
-        onSubmit={jobToEdit ? handleEditJob : handleAddJob}
-        jobToEdit={jobToEdit}
-      />
     </>
   );
 }

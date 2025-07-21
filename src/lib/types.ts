@@ -1,3 +1,4 @@
+
 export type Job = {
   id: string;
   title: string;
@@ -6,6 +7,7 @@ export type Job = {
   applicationType: 'link' | 'form';
   applyLink?: string;
   createdAt: Date;
+  createdBy: string; // Admin user's email
 };
 
 export type Applicant = {

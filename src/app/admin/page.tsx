@@ -47,7 +47,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { logout } from "@/lib/auth";
+import { logout, getAuthenticatedUser } from "@/lib/auth";
 
 function AdminPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -72,20 +72,29 @@ function AdminPage() {
     router.push('/login');
   };
 
-  const handleAddJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
+  const handleAddJob = (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
+    const adminUser = getAuthenticatedUser();
+    if (!adminUser) {
+      // This should ideally not happen if withAuth is working correctly
+      alert("You must be logged in to create a job.");
+      router.push('/login');
+      return;
+    }
+
     const newJob: Job = {
       ...data,
       id: crypto.randomUUID(),
       createdAt: new Date(),
+      createdBy: adminUser.email,
     };
     setJobs((prevJobs) => [newJob, ...prevJobs]);
   };
 
-  const handleEditJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
+  const handleEditJob = (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
     if (!jobToEdit) return;
     setJobs((prevJobs) =>
       prevJobs.map((job) =>
-        job.id === jobToEdit.id ? { ...job, ...data, id: jobToEdit.id, createdAt: jobToEdit.createdAt } : job
+        job.id === jobToEdit.id ? { ...job, ...data, id: jobToEdit.id, createdAt: jobToEdit.createdAt, createdBy: jobToEdit.createdBy } : job
       )
     );
     setJobToEdit(null);
@@ -135,6 +144,10 @@ function AdminPage() {
           </div>
         )
       }
+    },
+    {
+      accessorKey: "createdBy",
+      header: "Posted By",
     },
     {
       accessorKey: "createdAt",

@@ -1,10 +1,16 @@
 
+
 const ADMIN_USERS = [
   { email: 'admin@example.com', password: 'password123' },
   { email: 'manager@example.com', password: 'password456' },
 ];
 
 const AUTH_KEY = 'job-board-auth';
+
+interface AuthData {
+    email: string;
+    loggedInAt: string;
+}
 
 export const login = (email: string, password: string): boolean => {
   const user = ADMIN_USERS.find(
@@ -44,3 +50,13 @@ export const isAuthenticated = (): boolean => {
   }
   return false;
 };
+
+export const getAuthenticatedUser = (): AuthData | null => {
+    if (typeof window !== 'undefined') {
+        const authData = localStorage.getItem(AUTH_KEY);
+        if (authData) {
+            return JSON.parse(authData) as AuthData;
+        }
+    }
+    return null;
+}

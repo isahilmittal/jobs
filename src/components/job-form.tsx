@@ -54,7 +54,7 @@ type JobFormValues = z.infer<typeof jobFormSchema>;
 interface JobFormProps {
   isOpen: boolean;
   onOpenChange: (open: boolean) => void;
-  onSubmit: (data: Omit<Job, "id" | "createdAt">) => void;
+  onSubmit: (data: Omit<Job, "id" | "createdAt" | "createdBy">) => void;
   jobToEdit?: Job | null;
 }
 
