@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -30,12 +30,22 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Wand2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const jobFormSchema = z.object({
   title: z.string().min(1, "Title is required."),
   description: z.string().min(1, "Description is required."),
   tags: z.array(z.string()).min(1, "At least one tag is required."),
-  applyLink: z.string().url("Please enter a valid URL."),
+  applicationType: z.enum(['link', 'form']),
+  applyLink: z.string().optional(),
+}).refine(data => {
+    if (data.applicationType === 'link') {
+        return !!data.applyLink && z.string().url().safeParse(data.applyLink).success;
+    }
+    return true;
+}, {
+    message: "A valid URL is required for external link applications.",
+    path: ["applyLink"],
 });
 
 type JobFormValues = z.infer<typeof jobFormSchema>;
@@ -58,17 +68,21 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
       title: "",
       description: "",
       tags: [],
+      applicationType: 'link',
       applyLink: "",
     },
   });
 
-  useState(() => {
+  const applicationType = form.watch("applicationType");
+
+  useEffect(() => {
     if (isOpen) {
         if (jobToEdit) {
             form.reset({
                 title: jobToEdit.title,
                 description: jobToEdit.description,
                 tags: jobToEdit.tags,
+                applicationType: jobToEdit.applicationType,
                 applyLink: jobToEdit.applyLink,
             });
         } else {
@@ -76,11 +90,12 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
                 title: "",
                 description: "",
                 tags: [],
+                applicationType: 'link',
                 applyLink: "",
             });
         }
     }
-  });
+  }, [isOpen, jobToEdit, form]);
 
   const handleFormSubmit = (data: JobFormValues) => {
     onSubmit(data);
@@ -168,7 +183,7 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
         if (!open) {
-            form.reset({ title: "", description: "", tags: [], applyLink: "" });
+            form.reset({ title: "", description: "", tags: [], applicationType: 'link', applyLink: "" });
         }
         onOpenChange(open);
     }}>
@@ -259,17 +274,53 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
             />
             <FormField
               control={form.control}
-              name="applyLink"
+              name="applicationType"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Application Link</FormLabel>
+                <FormItem className="space-y-3">
+                  <FormLabel>Application Type</FormLabel>
                   <FormControl>
-                    <Input placeholder="https://example.com/apply" {...field} />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="flex space-x-4"
+                    >
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="link" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          External Link
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-2 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="form" />
+                        </FormControl>
+                        <FormLabel className="font-normal">
+                          Internal Form
+                        </FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            {applicationType === 'link' && (
+              <FormField
+                control={form.control}
+                name="applyLink"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Application Link</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://example.com/apply" {...field} value={field.value || ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <DialogFooter>
               <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>

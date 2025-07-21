@@ -9,7 +9,7 @@ import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { PlusCircle, Search, Tag, X, Briefcase, Settings, Star } from "lucide-react";
+import { PlusCircle, Search, Tag, X, Briefcase, Star } from "lucide-react";
 
 const initialJobs: Job[] = [
   {
@@ -17,6 +17,7 @@ const initialJobs: Job[] = [
     title: "Senior Frontend Developer",
     description: "We are looking for an experienced Frontend Developer to join our team. You will be responsible for building the 'client-side' of our web applications. You should be able to translate our company and customer needs into functional and appealing interactive applications.",
     tags: ["React", "TypeScript", "Next.js", "TailwindCSS"],
+    applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 2), // 2 days ago
   },
@@ -25,7 +26,7 @@ const initialJobs: Job[] = [
     title: "UX/UI Designer",
     description: "We are seeking a talented UX/UI Designer to create amazing user experiences. The ideal candidate should have an eye for clean and artful design, possess superior UI skills and be able to translate high-level requirements into interaction flows and artifacts.",
     tags: ["Figma", "UX", "UI", "Prototyping"],
-    applyLink: "#",
+    applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 5), // 5 days ago
   },
   {
@@ -33,6 +34,7 @@ const initialJobs: Job[] = [
     title: "Cloud Solutions Architect",
     description: "Join our team as a Cloud Solutions Architect to design and implement robust, scalable, and secure cloud infrastructures. You'll work with cutting-edge cloud technologies and help our clients to migrate their workloads to the cloud.",
     tags: ["AWS", "Azure", "GCP", "DevOps", "Security"],
+    applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 8), // 8 hours ago
   },
@@ -41,7 +43,7 @@ const initialJobs: Job[] = [
     title: "Product Manager - AI/ML",
     description: "Lead the development of our next-generation AI-powered products. You will own the product roadmap, work with engineering to define features, and be the voice of the customer within the company.",
     tags: ["Product Management", "AI", "Machine Learning", "Agile"],
-    applyLink: "#",
+    applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 1), // 1 day ago
   },
   {
@@ -49,6 +51,7 @@ const initialJobs: Job[] = [
     title: "Data Scientist",
     description: "We're looking for a Data Scientist to analyze large amounts of raw information to find patterns that will help improve our company. We will rely on you to build data products to extract valuable business insights.",
     tags: ["Python", "R", "SQL", "Big Data", "Statistics"],
+    applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 7), // 7 days ago
   },
@@ -57,6 +60,7 @@ const initialJobs: Job[] = [
     title: "DevOps Engineer",
     description: "We are seeking a DevOps Engineer to help us build functional systems that improve customer experience. DevOps Engineer responsibilities include deploying product updates, identifying production issues and implementing integrations.",
     tags: ["Docker", "Kubernetes", "CI/CD", "Terraform", "Ansible"],
+    applicationType: 'link',
     applyLink: "#",
     createdAt: new Date(Date.now() - 1000 * 60 * 30), // 30 mins ago
   },
@@ -65,7 +69,7 @@ const initialJobs: Job[] = [
     title: "Full-Stack Engineer",
     description: "We're hiring a Full-Stack Engineer to work on both our front-end and back-end services. You'll be building new features, fixing bugs, and improving the overall performance and reliability of our platform.",
     tags: ["Node.js", "React", "PostgreSQL", "GraphQL", "TypeScript"],
-    applyLink: "#",
+    applicationType: 'form',
     createdAt: new Date(Date.now() - 1000 * 60 * 60 * 24 * 10), // 10 days ago
   },
 ];
@@ -83,11 +87,15 @@ export default function Home() {
       setJobs(JSON.parse(storedJobs).map((j: Job) => ({...j, createdAt: new Date(j.createdAt)})));
     } else {
       setJobs(initialJobs);
+      localStorage.setItem('jobs', JSON.stringify(initialJobs));
     }
   }, []);
 
   useEffect(() => {
-    localStorage.setItem('jobs', JSON.stringify(jobs));
+    // Only update localStorage if jobs have been loaded
+    if (jobs.length > 0) {
+      localStorage.setItem('jobs', JSON.stringify(jobs));
+    }
   }, [jobs]);
 
   const handleAddJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
@@ -241,5 +249,3 @@ export default function Home() {
     </>
   );
 }
-
-    

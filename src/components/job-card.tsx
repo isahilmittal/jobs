@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Job } from "@/lib/types";
 import {
   Card,
@@ -29,7 +30,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Calendar, Edit, Link as LinkIcon, MoreVertical, Trash2 } from "lucide-react";
+import { Calendar, Edit, Link as LinkIcon, MoreVertical, Trash2, FileText } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 
 interface JobCardProps {
@@ -39,6 +40,27 @@ interface JobCardProps {
 }
 
 export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
+  const ApplyButton = () => {
+    if (job.applicationType === 'link') {
+      return (
+        <Button asChild className="w-full bg-primary/90 hover:bg-primary text-primary-foreground">
+          <a href={job.applyLink} target="_blank" rel="noopener noreferrer">
+            Apply Now
+            <LinkIcon className="ml-2 h-4 w-4" />
+          </a>
+        </Button>
+      );
+    }
+    return (
+      <Button asChild className="w-full bg-primary/90 hover:bg-primary text-primary-foreground">
+        <Link href={`/jobs/${job.id}`}>
+          Apply Now
+          <FileText className="ml-2 h-4 w-4" />
+        </Link>
+      </Button>
+    );
+  };
+  
   return (
     <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card group border-border/60 hover:border-primary/50">
       <CardHeader>
@@ -107,12 +129,7 @@ export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full bg-primary/90 hover:bg-primary text-primary-foreground">
-          <a href={job.applyLink} target="_blank" rel="noopener noreferrer">
-            Apply Now
-            <LinkIcon className="ml-2 h-4 w-4" />
-          </a>
-        </Button>
+        <ApplyButton />
       </CardFooter>
     </Card>
   );
