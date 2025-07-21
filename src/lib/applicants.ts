@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { Applicant, EnrichedApplicant } from '@/lib/types';
+import { Applicant, EnrichedApplicant, Job } from '@/lib/types';
 import { collection, addDoc, getDocs, doc, query, orderBy, Timestamp } from 'firebase/firestore';
 import { getJobs } from './jobs';
 
@@ -40,11 +40,13 @@ export async function getApplicants(): Promise<Applicant[]> {
     return applicantList;
 }
 
-export async function getEnrichedApplicants(): Promise<EnrichedApplicant[]> {
-    const applicants = await getApplicants();
-    const jobs = await getJobs();
+export async function getEnrichedApplicants(jobs?: Job[]): Promise<EnrichedApplicant[]> {
+    const [applicants, allJobs] = await Promise.all([
+        getApplicants(),
+        jobs ? Promise.resolve(jobs) : getJobs() // Fetch jobs only if not provided
+    ]);
 
-    const jobsMap = new Map(jobs.map(job => [job.id, job.title]));
+    const jobsMap = new Map(allJobs.map(job => [job.id, job.title]));
       
     const enrichedApplicants = applicants.map(applicant => ({
       ...applicant,

@@ -22,7 +22,7 @@ import { format } from "date-fns";
 
 import { Job } from "@/lib/types";
 import { getJobs, addJob, updateJob, deleteJob } from "@/lib/jobs";
-import { getEnrichedApplicants } from "@/lib/applicants";
+import { getApplicants } from "@/lib/applicants";
 import { getSubscriberCount } from "@/lib/subscribers";
 import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
@@ -122,7 +122,7 @@ function AdminPage() {
 
         const [fetchedJobs, fetchedApplicants, fetchedSubscribers] = await Promise.all([
             getJobs(),
-            getEnrichedApplicants(),
+            getApplicants(), // Fetch raw applicants, not enriched
             getSubscriberCount(),
         ]);
 
@@ -354,7 +354,7 @@ function AdminPage() {
                         <Users className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{adminStaff.length + 1}</div>
+                        <div className="text-2xl font-bold">{currentUser?.role === 'SUPER_ADMIN' ? adminStaff.length + 1 : 1}</div>
                         <p className="text-xs text-muted-foreground">Users with admin access</p>
                     </CardContent>
                 </Card>

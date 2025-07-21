@@ -50,6 +50,7 @@ function ApplicantsPage() {
         }
         setCurrentUser(user);
         
+        // This function now fetches both jobs and applicants efficiently.
         const fetchedApplicants = await getEnrichedApplicants();
         setApplicants(fetchedApplicants);
         setIsLoading(false);
