@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useTransition, useEffect } from "react";
@@ -83,7 +84,7 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
                 description: jobToEdit.description,
                 tags: jobToEdit.tags,
                 applicationType: jobToEdit.applicationType,
-                applyLink: jobToEdit.applyLink,
+                applyLink: jobToEdit.applicationType === 'link' ? jobToEdit.applyLink : "",
             });
         } else {
             form.reset({
@@ -98,7 +99,11 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
   }, [isOpen, jobToEdit, form]);
 
   const handleFormSubmit = (data: JobFormValues) => {
-    onSubmit(data);
+    const finalData = {
+      ...data,
+      applyLink: data.applicationType === 'link' ? data.applyLink : undefined,
+    }
+    onSubmit(finalData);
     form.reset();
     onOpenChange(false);
   };

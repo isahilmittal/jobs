@@ -4,7 +4,7 @@ export type Job = {
   description: string;
   tags: string[];
   applicationType: 'link' | 'form';
-  applyLink?: string; // Optional now
+  applyLink?: string;
   createdAt: Date;
 };
 

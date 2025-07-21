@@ -53,7 +53,7 @@ export default function JobApplicationPage() {
         const jobs: Job[] = JSON.parse(storedJobs);
         const currentJob = jobs.find(j => j.id === id);
         if (currentJob) {
-          setJob(currentJob);
+          setJob({...currentJob, createdAt: new Date(currentJob.createdAt)});
         }
       }
     }
