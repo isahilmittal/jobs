@@ -59,9 +59,6 @@ export async function deleteJob(jobId: string): Promise<void> {
 }
 
 export async function addInitialJobs() {
-    const jobsExist = (await getDocs(collection(db, 'jobs'))).size > 0;
-    if (jobsExist) return;
-
     const initialJobs: Omit<Job, 'id'| 'createdAt'>[] = [
       {
         title: "Senior Frontend Developer",

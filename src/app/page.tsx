@@ -31,9 +31,11 @@ export default function Home() {
       const user = await getCurrentUser();
       setIsLoggedIn(!!user);
       
-      await addInitialJobs();
-      
-      const fetchedJobs = await getJobs();
+      let fetchedJobs = await getJobs();
+      if (fetchedJobs.length === 0) {
+        await addInitialJobs();
+        fetchedJobs = await getJobs();
+      }
       setJobs(fetchedJobs);
 
       setIsLoading(false);
