@@ -1,10 +1,11 @@
 "use client";
 
-import { useState, useTransition, useEffect } from "react";
+import { useState, useTransition } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { generateTags } from "@/ai/flows/generate-tags-from-job-description";
+import { suggestJobDescription } from "@/ai/flows/suggest-job-description";
 import { type Job } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import {
@@ -27,7 +28,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, X } from "lucide-react";
+import { Loader2, Sparkles, Wand2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 const jobFormSchema = z.object({
@@ -48,7 +49,7 @@ interface JobFormProps {
 
 export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormProps) {
   const { toast } = useToast();
-  const [isGeneratingTags, startTagGenerationTransition] = useTransition();
+  const [isGenerating, startGenerationTransition] = useTransition();
   const [tagInput, setTagInput] = useState("");
 
   const form = useForm<JobFormValues>({
@@ -61,7 +62,7 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
     },
   });
 
-  useEffect(() => {
+  useState(() => {
     if (isOpen) {
         if (jobToEdit) {
             form.reset({
@@ -79,7 +80,7 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
             });
         }
     }
-  }, [jobToEdit, form, isOpen]);
+  });
 
   const handleFormSubmit = (data: JobFormValues) => {
     onSubmit(data);
@@ -102,7 +103,37 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
     form.setValue("tags", form.getValues("tags").filter(tag => tag !== tagToRemove), { shouldValidate: true });
   };
   
-  const handleGenerateTags = async () => {
+  const handleSuggestDescription = () => {
+    const title = form.getValues("title");
+    if (!title) {
+      toast({
+        variant: "destructive",
+        title: "No title provided",
+        description: "Please enter a job title before suggesting a description.",
+      });
+      return;
+    }
+
+    startGenerationTransition(async () => {
+      try {
+        const result = await suggestJobDescription({ jobTitle: title });
+        form.setValue("description", result.jobDescription, { shouldValidate: true });
+        toast({
+          title: "Description suggested!",
+          description: "An AI-powered description has been generated.",
+        });
+      } catch (error) {
+        console.error("Failed to suggest description:", error);
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: "Failed to suggest description. Please try again.",
+        });
+      }
+    });
+  };
+  
+  const handleGenerateTags = () => {
     const description = form.getValues("description");
     if (!description) {
       toast({
@@ -113,7 +144,7 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
       return;
     }
 
-    startTagGenerationTransition(async () => {
+    startGenerationTransition(async () => {
       try {
         const result = await generateTags({ jobDescription: description });
         const existingTags = form.getValues("tags");
@@ -135,7 +166,12 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
   };
 
   return (
-    <Dialog open={isOpen} onOpenChange={onOpenChange}>
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+            form.reset({ title: "", description: "", tags: [], applyLink: "" });
+        }
+        onOpenChange(open);
+    }}>
       <DialogContent className="sm:max-w-[625px]">
         <DialogHeader>
           <DialogTitle>{jobToEdit ? 'Edit Job' : 'Add New Job'}</DialogTitle>
@@ -165,17 +201,27 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
                 <FormItem>
                   <div className="flex justify-between items-center mb-2">
                     <FormLabel>Job Description</FormLabel>
-                    <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isGeneratingTags}>
-                      {isGeneratingTags ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                      )}
-                      Generate Tags
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isGenerating}>
+                            {isGenerating ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Wand2 className="mr-2 h-4 w-4 text-primary" />
+                            )}
+                            Suggest
+                        </Button>
+                        <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isGenerating}>
+                            {isGenerating ? (
+                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            ) : (
+                                <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                            )}
+                            Generate Tags
+                        </Button>
+                    </div>
                   </div>
                   <FormControl>
-                    <Textarea rows={5} placeholder="Describe the role, responsibilities, and requirements..." {...field} />
+                    <Textarea rows={8} placeholder="Describe the role, responsibilities, and requirements..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -228,7 +274,10 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
               <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
-              <Button type="submit">{jobToEdit ? 'Save Changes' : 'Post Job'}</Button>
+              <Button type="submit" disabled={isGenerating}>
+                {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                {jobToEdit ? 'Save Changes' : 'Post Job'}
+              </Button>
             </DialogFooter>
           </form>
         </Form>
