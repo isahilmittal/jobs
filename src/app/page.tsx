@@ -89,9 +89,13 @@ export default function Home() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
             </Link>
-            {isLoggedIn && (
+            {isLoggedIn ? (
                 <Button asChild variant="default" size="sm">
                     <Link href="/admin">Admin Dashboard</Link>
+                </Button>
+            ) : (
+                <Button asChild variant="outline" size="sm">
+                  <Link href="/login"><LogIn className="mr-2 h-4 w-4" />Admin Login</Link>
                 </Button>
             )}
           </div>
