@@ -111,7 +111,7 @@ export default function AdminPage() {
           </Button>
         )
       },
-      cell: ({ row }) => <div className="font-medium">{row.getValue("title")}</div>,
+      cell: ({ row }) => <div className="font-medium text-foreground">{row.getValue("title")}</div>,
     },
     {
       accessorKey: "tags",
@@ -209,8 +209,8 @@ export default function AdminPage() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen bg-muted/40">
-        <header className="bg-card border-b sticky top-0 z-10">
+      <div className="flex flex-col min-h-screen bg-background text-muted-foreground">
+        <header className="bg-card/80 border-b sticky top-0 z-10 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2">
               <Briefcase className="h-7 w-7 text-primary" />
@@ -221,14 +221,14 @@ export default function AdminPage() {
 
         <main className="container mx-auto px-4 py-8 flex-grow">
           <div className="flex justify-between items-center mb-6">
-            <h2 className="text-3xl font-bold tracking-tight">Job Listings</h2>
-            <Button onClick={openAddForm}>
+            <h2 className="text-3xl font-bold tracking-tight text-foreground">Job Listings</h2>
+            <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground">
               <PlusCircle className="mr-2 h-5 w-5" />
               Add New Job
             </Button>
           </div>
 
-          <div className="rounded-lg border bg-card">
+          <div className="rounded-lg border bg-card text-foreground">
             <Table>
               <TableHeader>
                 {table.getHeaderGroups().map((headerGroup) => (

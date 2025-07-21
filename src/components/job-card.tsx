@@ -40,7 +40,7 @@ interface JobCardProps {
 
 export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
   return (
-    <Card className="flex flex-col h-full transition-shadow duration-300 hover:shadow-lg bg-card group">
+    <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card group border-border/60 hover:border-primary/50">
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="space-y-1 pr-2">
@@ -107,7 +107,7 @@ export function JobCard({ job, onEdit, onDelete }: JobCardProps) {
         </div>
       </CardContent>
       <CardFooter>
-        <Button asChild className="w-full">
+        <Button asChild className="w-full bg-primary/90 hover:bg-primary text-primary-foreground">
           <a href={job.applyLink} target="_blank" rel="noopener noreferrer">
             Apply Now
             <LinkIcon className="ml-2 h-4 w-4" />

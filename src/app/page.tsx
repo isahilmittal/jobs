@@ -145,8 +145,8 @@ export default function Home() {
 
   return (
     <>
-      <div className="flex flex-col min-h-screen">
-        <header className="bg-card border-b sticky top-0 z-10">
+      <div className="flex flex-col min-h-screen bg-background">
+        <header className="bg-card/80 border-b sticky top-0 z-20 backdrop-blur-sm">
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2">
               <Briefcase className="h-7 w-7 text-primary" />
@@ -158,7 +158,7 @@ export default function Home() {
                   <Settings className="h-5 w-5" />
                 </Button>
               </Link>
-              <Button onClick={openAddForm}>
+              <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Post a Job
               </Button>
@@ -167,12 +167,13 @@ export default function Home() {
         </header>
 
         <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="text-center mb-12">
+          <div className="text-center mb-12 relative">
+             <div className="absolute inset-0.5 bg-primary/10 rounded-full blur-3xl -z-10"></div>
             <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">Find Your Next <span className="text-primary">Opportunity</span></h2>
             <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Your one-stop shop for amazing career opportunities. Browse, search, and apply to your dream job today.</p>
           </div>
           
-          <div className="mb-8 p-6 bg-card rounded-lg shadow-sm">
+          <div className="mb-8 p-6 bg-card/50 border rounded-lg shadow-sm">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
               <div>
                 <label htmlFor="search" className="block text-sm font-medium text-foreground mb-2">Search Jobs</label>
@@ -181,7 +182,7 @@ export default function Home() {
                   <Input 
                     id="search"
                     placeholder="Search by title, description, or tag..."
-                    className="pl-10 h-11"
+                    className="pl-10 h-11 bg-background"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
