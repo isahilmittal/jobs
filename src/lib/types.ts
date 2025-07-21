@@ -23,3 +23,9 @@ export type Applicant = {
 export type EnrichedApplicant = Applicant & {
   jobTitle: string;
 };
+
+export type Subscriber = {
+    id: string;
+    email: string;
+    subscribedAt: Date;
+};

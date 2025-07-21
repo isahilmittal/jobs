@@ -23,6 +23,7 @@ import { format } from "date-fns";
 import { Job } from "@/lib/types";
 import { getJobs, addJob, updateJob, deleteJob } from "@/lib/jobs";
 import { getEnrichedApplicants } from "@/lib/applicants";
+import { getSubscriberCount } from "@/lib/subscribers";
 import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -70,7 +71,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight } from "lucide-react";
+import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail } from "lucide-react";
 import withAuth from "@/components/with-auth";
 import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
 
@@ -92,6 +93,7 @@ function AdminPage() {
   const [adminStaff, setAdminStaff] = useState<AdminStaff[]>([]);
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [applicantCount, setApplicantCount] = useState(0);
+  const [subscriberCount, setSubscriberCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
@@ -118,13 +120,15 @@ function AdminPage() {
             setAdminStaff(await getAllAdminUsers());
         }
 
-        const [fetchedJobs, fetchedApplicants] = await Promise.all([
-        getJobs(),
-        getEnrichedApplicants(),
+        const [fetchedJobs, fetchedApplicants, fetchedSubscribers] = await Promise.all([
+            getJobs(),
+            getEnrichedApplicants(),
+            getSubscriberCount(),
         ]);
 
         setJobs(fetchedJobs);
         setApplicantCount(fetchedApplicants.length);
+        setSubscriberCount(fetchedSubscribers);
     } catch (error) {
         console.error("Failed to fetch admin data:", error);
         toast({variant: "destructive", title: "Error", description: "Could not load dashboard data."})
@@ -318,7 +322,7 @@ function AdminPage() {
 
         <main className="container mx-auto px-4 py-8 flex-grow">
           <section className="mb-12">
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
                         <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
@@ -336,7 +340,7 @@ function AdminPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-2xl font-bold">{applicantCount}</div>
-                        <p className="text-xs text-muted-foreground">Applications received via internal form</p>
+                        <p className="text-xs text-muted-foreground">Applications received</p>
                     </CardContent>
                     <CardFooter>
                        <Button asChild size="sm" variant="outline" className="w-full">
@@ -352,6 +356,16 @@ function AdminPage() {
                     <CardContent>
                         <div className="text-2xl font-bold">{adminStaff.length + 1}</div>
                         <p className="text-xs text-muted-foreground">Users with admin access</p>
+                    </CardContent>
+                </Card>
+                 <Card>
+                    <CardHeader className="flex flex-row items-center justify-between pb-2">
+                        <CardTitle className="text-sm font-medium">Newsletter Subscribers</CardTitle>
+                        <Mail className="h-4 w-4 text-muted-foreground"/>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="text-2xl font-bold">{subscriberCount}</div>
+                        <p className="text-xs text-muted-foreground">Ready for your updates</p>
                     </CardContent>
                 </Card>
             </div>
@@ -421,5 +435,3 @@ function AdminPage() {
 }
 
 export default withAuth(AdminPage);
-
-    

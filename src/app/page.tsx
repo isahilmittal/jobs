@@ -1,16 +1,18 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useTransition } from "react";
 import Link from "next/link";
 import { Job } from "@/lib/types";
 import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Tag, X, Briefcase, Star, LogIn, Loader2 } from "lucide-react";
+import { Search, Tag, X, Briefcase, Star, LogIn, Loader2, Mail } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getJobs, addInitialJobs } from "@/lib/jobs";
+import { addSubscriber } from "@/lib/subscribers";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Home() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -18,19 +20,19 @@ export default function Home() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  
+  const [isSubscribing, startSubscribeTransition] = useTransition();
+  const [email, setEmail] = useState("");
+  const { toast } = useToast();
+
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
       
-      // Check if user is logged in
       const user = await getCurrentUser();
       setIsLoggedIn(!!user);
       
-      // Seed initial data if DB is empty
       await addInitialJobs();
       
-      // Fetch jobs
       const fetchedJobs = await getJobs();
       setJobs(fetchedJobs);
 
@@ -38,6 +40,23 @@ export default function Home() {
     }
     fetchData();
   }, []);
+
+  const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
+      e.preventDefault();
+      if (!email) {
+          toast({ variant: 'destructive', title: 'Error', description: 'Please enter your email address.'});
+          return;
+      }
+      startSubscribeTransition(async () => {
+          const result = await addSubscriber(email);
+          if (result.success) {
+              toast({ title: 'Subscribed!', description: "Thanks for joining our newsletter."});
+              setEmail("");
+          } else {
+              toast({ variant: 'destructive', title: 'Error', description: result.message });
+          }
+      });
+  }
 
   const toggleTagSelection = (tag: string) => {
     setSelectedTags(prev => 
@@ -70,14 +89,6 @@ export default function Home() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
             </Link>
-            {!isLoggedIn && (
-               <Button asChild variant="outline" size="sm">
-                  <Link href="/login">
-                    <LogIn className="mr-2 h-4 w-4" />
-                    Admin Login
-                  </Link>
-              </Button>
-            )}
             {isLoggedIn && (
                 <Button asChild variant="default" size="sm">
                     <Link href="/admin">Admin Dashboard</Link>
@@ -153,8 +164,31 @@ export default function Home() {
         </main>
         
         <footer className="bg-card border-t mt-12">
-          <div className="container mx-auto px-4 py-6 text-center text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} Job Board Bonanza. All rights reserved.</p>
+          <div className="container mx-auto px-4 py-8">
+            <div className="grid md:grid-cols-2 gap-8 items-center">
+                <div>
+                    <h3 className="text-lg font-semibold text-foreground">Stay Updated on New Jobs</h3>
+                    <p className="text-muted-foreground mt-2">Subscribe to our newsletter to receive the latest job postings directly in your inbox.</p>
+                </div>
+                <form onSubmit={handleSubscribe} className="flex items-center gap-2">
+                    <Input 
+                        type="email" 
+                        placeholder="Enter your email" 
+                        className="bg-background"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        disabled={isSubscribing}
+                        aria-label="Email for newsletter"
+                    />
+                    <Button type="submit" disabled={isSubscribing}>
+                        {isSubscribing ? <Loader2 className="animate-spin"/> : <Mail />}
+                        <span className="ml-2 hidden sm:inline">Subscribe</span>
+                    </Button>
+                </form>
+            </div>
+            <div className="mt-8 text-center text-muted-foreground text-sm">
+                <p>&copy; {new Date().getFullYear()} Job Board Bonanza. All rights reserved.</p>
+            </div>
           </div>
         </footer>
       </div>
