@@ -121,7 +121,7 @@ function AdminPage() {
         }
 
         const [fetchedJobs, fetchedApplicants, fetchedSubscribers] = await Promise.all([
-            getJobs(),
+            getJobs(true), // Fetch all jobs for the admin view
             getApplicants(), // Fetch raw applicants, not enriched
             getSubscriberCount(),
         ]);
@@ -238,7 +238,18 @@ function AdminPage() {
           Posted On <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{format(row.getValue("createdAt") as Date, "MMM d, yyyy")}</div>
+      cell: ({ row }) => {
+        const date = row.getValue("createdAt") as Date;
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        const isExpired = date < sevenDaysAgo;
+        return (
+            <div className="flex items-center">
+                <span>{format(date, "MMM d, yyyy")}</span>
+                {isExpired && <Badge variant="destructive" className="ml-2">Expired</Badge>}
+            </div>
+        )
+      }
     },
     {
       id: "actions",
@@ -325,12 +336,12 @@ function AdminPage() {
             <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
                 <Card>
                     <CardHeader className="flex flex-row items-center justify-between pb-2">
-                        <CardTitle className="text-sm font-medium">Total Jobs</CardTitle>
+                        <CardTitle className="text-sm font-medium">Active Jobs</CardTitle>
                         <Briefcase className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{jobs.length}</div>
-                        <p className="text-xs text-muted-foreground">Currently active job listings</p>
+                        <div className="text-2xl font-bold">{jobs.filter(job => { const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); return job.createdAt >= sevenDaysAgo; }).length}</div>
+                        <p className="text-xs text-muted-foreground">Jobs posted in the last 7 days</p>
                     </CardContent>
                 </Card>
                 <Card>
@@ -409,7 +420,7 @@ function AdminPage() {
 
           <section>
             <div className="flex justify-between items-center mb-6">
-              <h2 className="text-3xl font-bold tracking-tight text-foreground">Job Listings</h2>
+              <h2 className="text-3xl font-bold tracking-tight text-foreground">All Job Listings</h2>
               <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground"><PlusCircle className="mr-2 h-5 w-5" />Add New Job</Button>
             </div>
             <div className="rounded-lg border bg-card text-foreground">

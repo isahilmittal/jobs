@@ -3,7 +3,7 @@
 
 import { db } from '@/lib/firebase';
 import { Job } from '@/lib/types';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, Timestamp, where } from 'firebase/firestore';
 
 // Helper to convert Firestore Timestamps to Dates in a job object
 function jobFromDoc(docSnapshot: any): Job {
@@ -16,9 +16,20 @@ function jobFromDoc(docSnapshot: any): Job {
 }
 
 
-export async function getJobs(): Promise<Job[]> {
+export async function getJobs(includeExpired = false): Promise<Job[]> {
     const jobsCol = collection(db, 'jobs');
-    const q = query(jobsCol, orderBy('createdAt', 'desc'));
+    
+    let q;
+    if (includeExpired) {
+        // Fetch all jobs, ordered by creation date
+        q = query(jobsCol, orderBy('createdAt', 'desc'));
+    } else {
+        // Fetch only active jobs (created in the last 7 days)
+        const sevenDaysAgo = new Date();
+        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+        q = query(jobsCol, where('createdAt', '>=', sevenDaysAgo), orderBy('createdAt', 'desc'));
+    }
+
     const jobSnapshot = await getDocs(q);
     const jobList = jobSnapshot.docs.map(doc => jobFromDoc(doc));
     return jobList;

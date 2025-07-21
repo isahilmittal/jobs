@@ -43,14 +43,14 @@ export async function getApplicants(): Promise<Applicant[]> {
 export async function getEnrichedApplicants(jobs?: Job[]): Promise<EnrichedApplicant[]> {
     const [applicants, allJobs] = await Promise.all([
         getApplicants(),
-        jobs ? Promise.resolve(jobs) : getJobs() // Fetch jobs only if not provided
+        jobs ? Promise.resolve(jobs) : getJobs(true) // Fetch all jobs for enrichment
     ]);
 
     const jobsMap = new Map(allJobs.map(job => [job.id, job.title]));
       
     const enrichedApplicants = applicants.map(applicant => ({
       ...applicant,
-      jobTitle: jobsMap.get(applicant.jobId) || "Unknown Job",
+      jobTitle: jobsMap.get(applicant.jobId) || "Unknown Job (Expired)",
     }));
 
     return enrichedApplicants;
