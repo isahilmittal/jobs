@@ -21,11 +21,17 @@ export interface AdminUser {
 
 // Helper to get user role
 const getUserRole = async (uid: string): Promise<UserRole | null> => {
-    const userRoleDoc = await getDoc(doc(db, "userRoles", uid));
-    if (userRoleDoc.exists()) {
-        return userRoleDoc.data().role as UserRole;
+    try {
+        const userRoleDoc = await getDoc(doc(db, "userRoles", uid));
+        if (userRoleDoc.exists()) {
+            return userRoleDoc.data().role as UserRole;
+        }
+        return null;
+    } catch (error) {
+        console.error("Error getting user role:", error);
+        // This can happen if Firestore DB is not created yet.
+        return null;
     }
-    return null;
 }
 
 // Helper to set user role
@@ -38,35 +44,47 @@ export const ensureSuperAdminExists = async () => {
     const superAdminEmail = 'sahil@analyzed.com';
     const rolesCollectionRef = collection(db, "userRoles");
     const q = query(rolesCollectionRef, where("email", "==", superAdminEmail));
-    const querySnapshot = await getDocs(q);
+    
+    try {
+        const querySnapshot = await getDocs(q);
 
-    if (querySnapshot.empty) {
-        console.warn(`
-            Creating SUPER_ADMIN role for ${superAdminEmail}. 
-            IMPORTANT: You must manually create this user in Firebase Authentication 
-            with the email ${superAdminEmail} and password '3945@SahilM' for login to work.
-        `);
-
-        // This is a placeholder to create the role document.
-        // The UID will be incorrect until the user is created in Firebase Auth and logs in once.
-        // A more robust solution would involve a Cloud Function triggered on user creation.
-        const batch = writeBatch(db);
-        const placeholderDoc = doc(collection(db, "placeholdersForSuperAdmin"));
-        batch.set(placeholderDoc, { email: superAdminEmail, role: 'SUPER_ADMIN', createdAt: new Date() });
-        await batch.commit();
+        if (querySnapshot.empty) {
+            console.warn(`
+                *********************************************************************************
+                IMPORTANT: SUPER_ADMIN role for ${superAdminEmail} not found in Firestore.
+                You MUST create this user in Firebase Authentication for the app to work correctly.
+                Email: ${superAdminEmail}
+                Password: 3945@SahilM
+                The SUPER_ADMIN role will be assigned automatically on their first login.
+                *********************************************************************************
+            `);
+            // We don't create the doc here anymore. It will be created on first login.
+        }
+    } catch (error) {
+        console.error("Failed to check for SUPER_ADMIN.", error);
+        console.warn("This might be because your Firestore database has not been created yet. Please create it in the Firebase console.");
     }
 }
 
 export const addAdminUser = async (email: string, password: string): Promise<{success: boolean, message: string}> => {
     try {
+        // First check if user is already an admin to prevent duplicates
+        const rolesCollectionRef = collection(db, "userRoles");
+        const q = query(rolesCollectionRef, where("email", "==", email));
+        const existingRoles = await getDocs(q);
+        if (!existingRoles.empty) {
+            return { success: false, message: 'A user with this email already has a role assigned.'};
+        }
+
         const userCredential = await createUserWithEmailAndPassword(auth, email, password);
         const user = userCredential.user;
         await setUserRole(user.uid, user.email!, 'ADMIN');
         return { success: true, message: 'Admin user added successfully.'};
     } catch (error: any) {
         if (error.code === 'auth/email-already-in-use') {
-            return { success: false, message: 'User with this email already exists.' };
+            return { success: false, message: 'An admin with this email already exists in Firebase Authentication.' };
         }
+        console.error("Error adding admin user:", error);
         return { success: false, message: error.message };
     }
 }
@@ -148,5 +166,3 @@ export async function getAllAdminUsers(): Promise<Omit<AdminUser, 'password'>[]>
         .filter(user => user.role === 'ADMIN'); // Only return normal admins
     return users;
 }
-
-    
