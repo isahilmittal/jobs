@@ -20,7 +20,7 @@ import {
 } from "@tanstack/react-table";
 import { format } from "date-fns";
 
-import { Job, EnrichedApplicant } from "@/lib/types";
+import { Job } from "@/lib/types";
 import { getJobs, addJob, updateJob, deleteJob } from "@/lib/jobs";
 import { getEnrichedApplicants } from "@/lib/applicants";
 import { JobForm } from "@/components/job-form";
@@ -104,25 +104,36 @@ function AdminPage() {
   
   const fetchData = useCallback(async () => {
     setIsLoading(true);
-    const userWithRole = await getCurrentUserWithRole();
-    setCurrentUser(userWithRole);
-    
-    if (userWithRole?.role === 'SUPER_ADMIN') {
-        setAdminStaff(await getAllAdminUsers());
+    try {
+        await ensureSuperAdminExists();
+        const userWithRole = await getCurrentUserWithRole();
+        
+        if (!userWithRole) {
+          router.push('/login');
+          return;
+        }
+        setCurrentUser(userWithRole);
+        
+        if (userWithRole.role === 'SUPER_ADMIN') {
+            setAdminStaff(await getAllAdminUsers());
+        }
+
+        const [fetchedJobs, fetchedApplicants] = await Promise.all([
+        getJobs(),
+        getEnrichedApplicants(),
+        ]);
+
+        setJobs(fetchedJobs);
+        setApplicantCount(fetchedApplicants.length);
+    } catch (error) {
+        console.error("Failed to fetch admin data:", error);
+        toast({variant: "destructive", title: "Error", description: "Could not load dashboard data."})
+    } finally {
+        setIsLoading(false);
     }
-
-    const [fetchedJobs, fetchedApplicants] = await Promise.all([
-      getJobs(),
-      getEnrichedApplicants(),
-    ]);
-
-    setJobs(fetchedJobs);
-    setApplicantCount(fetchedApplicants.length);
-    setIsLoading(false);
-  }, []);
+  }, [router, toast]);
 
   useEffect(() => {
-    ensureSuperAdminExists();
     fetchData();
   }, [fetchData]);
 
@@ -339,7 +350,7 @@ function AdminPage() {
                         <Users className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{adminStaff.length}</div>
+                        <div className="text-2xl font-bold">{adminStaff.length + 1}</div>
                         <p className="text-xs text-muted-foreground">Users with admin access</p>
                     </CardContent>
                 </Card>
@@ -410,3 +421,5 @@ function AdminPage() {
 }
 
 export default withAuth(AdminPage);
+
+    

@@ -9,7 +9,7 @@ import {
     onAuthStateChanged,
     type User
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where, writeBatch } from 'firebase/firestore';
 
 export type UserRole = 'ADMIN' | 'SUPER_ADMIN';
 
@@ -19,8 +19,7 @@ export interface AdminUser {
     role: UserRole;
 }
 
-// In a real application, this would be a database.
-// We are now using Firestore to store user roles.
+// Helper to get user role
 const getUserRole = async (uid: string): Promise<UserRole | null> => {
     const userRoleDoc = await getDoc(doc(db, "userRoles", uid));
     if (userRoleDoc.exists()) {
@@ -29,6 +28,7 @@ const getUserRole = async (uid: string): Promise<UserRole | null> => {
     return null;
 }
 
+// Helper to set user role
 const setUserRole = async (uid: string, email: string, role: UserRole) => {
     await setDoc(doc(db, "userRoles", uid), { email, role });
 }
@@ -36,14 +36,24 @@ const setUserRole = async (uid: string, email: string, role: UserRole) => {
 // Ensure SUPER_ADMIN exists on first run
 export const ensureSuperAdminExists = async () => {
     const superAdminEmail = 'sahil@analyzed.com';
-    const rolesCollection = collection(db, "userRoles");
-    const q = query(rolesCollection, where("email", "==", superAdminEmail));
+    const rolesCollectionRef = collection(db, "userRoles");
+    const q = query(rolesCollectionRef, where("email", "==", superAdminEmail));
     const querySnapshot = await getDocs(q);
 
     if (querySnapshot.empty) {
-        console.log("Super admin not found, creating one... This requires manual user creation in Firebase Auth first.");
-        // Note: The user 'sahil@analyzed.com' must be created in the Firebase Authentication console first.
-        // This function will only assign the role.
+        console.warn(`
+            Creating SUPER_ADMIN role for ${superAdminEmail}. 
+            IMPORTANT: You must manually create this user in Firebase Authentication 
+            with the email ${superAdminEmail} and password '3945@SahilM' for login to work.
+        `);
+
+        // This is a placeholder to create the role document.
+        // The UID will be incorrect until the user is created in Firebase Auth and logs in once.
+        // A more robust solution would involve a Cloud Function triggered on user creation.
+        const batch = writeBatch(db);
+        const placeholderDoc = doc(collection(db, "placeholdersForSuperAdmin"));
+        batch.set(placeholderDoc, { email: superAdminEmail, role: 'SUPER_ADMIN', createdAt: new Date() });
+        await batch.commit();
     }
 }
 
@@ -69,7 +79,6 @@ export const deleteAdminUser = async (uid: string): Promise<{success: boolean, m
         }
         await deleteDoc(doc(db, "userRoles", uid));
         // Note: This only removes the role from Firestore. The user must be deleted from Firebase Auth separately.
-        // For simplicity, we are not handling user deletion from Auth here.
         return { success: true, message: 'Admin user role deleted. Remember to delete the user from Firebase Authentication.'};
     } catch (error: any) {
          return { success: false, message: error.message };
@@ -79,7 +88,18 @@ export const deleteAdminUser = async (uid: string): Promise<{success: boolean, m
 export const login = async (email: string, password: string): Promise<{ success: boolean; role?: UserRole; message?: string }> => {
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    const role = await getUserRole(userCredential.user.uid);
+    const user = userCredential.user;
+
+    // Special handling for the super admin on first login
+    if (email === 'sahil@analyzed.com') {
+      const currentRole = await getUserRole(user.uid);
+      if (!currentRole) {
+        console.log(`Assigning SUPER_ADMIN role to ${email}`);
+        await setUserRole(user.uid, user.email!, 'SUPER_ADMIN');
+      }
+    }
+
+    const role = await getUserRole(user.uid);
     if (role) {
         return { success: true, role };
     } else {
@@ -87,6 +107,7 @@ export const login = async (email: string, password: string): Promise<{ success:
         return { success: false, message: 'User is not an administrator.' };
     }
   } catch(error: any) {
+    // console.error("Login error:", error);
     return { success: false, message: "Invalid email or password." };
   }
 };
@@ -95,7 +116,7 @@ export const logout = async (): Promise<void> => {
     return signOut(auth);
 };
 
-export const getCurrentUser = async (): Promise<User | null> => {
+export async function getCurrentUser(): Promise<User | null> {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             unsubscribe();
@@ -104,7 +125,7 @@ export const getCurrentUser = async (): Promise<User | null> => {
     });
 };
 
-export const getCurrentUserWithRole = async (): Promise<{user: User; role: UserRole} | null> => {
+export async function getCurrentUserWithRole(): Promise<{user: User; role: UserRole} | null> {
     const user = await getCurrentUser();
     if (user) {
         const role = await getUserRole(user.uid);
@@ -116,11 +137,16 @@ export const getCurrentUserWithRole = async (): Promise<{user: User; role: UserR
 }
 
 
-export const getAllAdminUsers = async (): Promise<Omit<AdminUser, 'password'>[]> => {
+export async function getAllAdminUsers(): Promise<Omit<AdminUser, 'password'>[]> {
     const rolesSnapshot = await getDocs(collection(db, "userRoles"));
-    return rolesSnapshot.docs.map(doc => ({
-        uid: doc.id,
-        email: doc.data().email,
-        role: doc.data().role,
-    }));
+    const users = rolesSnapshot.docs
+        .map(doc => ({
+            uid: doc.id,
+            email: doc.data().email,
+            role: doc.data().role,
+        }))
+        .filter(user => user.role === 'ADMIN'); // Only return normal admins
+    return users;
 }
+
+    
