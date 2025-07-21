@@ -15,7 +15,20 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+let app;
+if (!getApps().length) {
+    try {
+        app = initializeApp(firebaseConfig);
+    } catch(e) {
+        console.error("Failed to initialize Firebase", e);
+        if (!firebaseConfig.projectId) {
+            console.error("Firebase projectId is missing. Make sure NEXT_PUBLIC_FIREBASE_PROJECT_ID is set in your .env file.")
+        }
+    }
+} else {
+    app = getApp();
+}
+
 
 export const db = getFirestore(app);
 export const auth = getAuth(app);

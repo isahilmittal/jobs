@@ -2,7 +2,7 @@
 'use server';
 
 import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where, Timestamp } from 'firebase/firestore';
+import { collection, addDoc, getDocs, query, where, Timestamp, serverTimestamp } from 'firebase/firestore';
 import { z } from 'zod';
 
 const emailSchema = z.string().email();
@@ -25,7 +25,7 @@ export async function addSubscriber(email: string): Promise<{success: boolean; m
     try {
         await addDoc(subscribersCol, {
             email: email,
-            subscribedAt: new Date(),
+            subscribedAt: serverTimestamp(),
         });
         return { success: true, message: 'Successfully subscribed!' };
     } catch (error: any) {

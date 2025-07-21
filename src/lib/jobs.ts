@@ -3,15 +3,16 @@
 
 import { db } from '@/lib/firebase';
 import { Job } from '@/lib/types';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, Timestamp, where } from 'firebase/firestore';
+import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, Timestamp, where, serverTimestamp } from 'firebase/firestore';
 
 // Helper to convert Firestore Timestamps to Dates in a job object
 function jobFromDoc(docSnapshot: any): Job {
     const data = docSnapshot.data();
+    const createdAt = data.createdAt;
     return {
         ...data,
         id: docSnapshot.id,
-        createdAt: data.createdAt instanceof Timestamp ? data.createdAt.toDate() : new Date(data.createdAt),
+        createdAt: createdAt instanceof Timestamp ? createdAt.toDate() : new Date(),
     };
 }
 
@@ -27,12 +28,17 @@ export async function getJobs(includeExpired = false): Promise<Job[]> {
         // Fetch only active jobs (created in the last 7 days)
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        q = query(jobsCol, where('createdAt', '>=', sevenDaysAgo), orderBy('createdAt', 'desc'));
+        q = query(jobsCol, where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo)), orderBy('createdAt', 'desc'));
     }
 
-    const jobSnapshot = await getDocs(q);
-    const jobList = jobSnapshot.docs.map(doc => jobFromDoc(doc));
-    return jobList;
+    try {
+        const jobSnapshot = await getDocs(q);
+        const jobList = jobSnapshot.docs.map(doc => jobFromDoc(doc));
+        return jobList;
+    } catch(e) {
+        console.error("Error fetching jobs", e);
+        return [];
+    }
 }
 
 export async function getJob(id: string): Promise<Job | null> {
@@ -50,13 +56,11 @@ export async function addJob(jobData: Omit<Job, 'id' | 'createdAt'>): Promise<Jo
     const jobsCol = collection(db, 'jobs');
     const docRef = await addDoc(jobsCol, {
         ...jobData,
-        createdAt: new Date(),
+        createdAt: serverTimestamp(),
     });
-    return {
-        ...jobData,
-        id: docRef.id,
-        createdAt: new Date(),
-    };
+
+    const newJobSnap = await getDoc(docRef);
+    return jobFromDoc(newJobSnap);
 }
 
 export async function updateJob(jobId: string, jobData: Partial<Omit<Job, 'id' | 'createdAt' | 'createdBy'>>): Promise<void> {

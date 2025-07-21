@@ -9,7 +9,7 @@ import {
     onAuthStateChanged,
     type User
 } from 'firebase/auth';
-import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where, writeBatch } from 'firebase/firestore';
+import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where, writeBatch, serverTimestamp } from 'firebase/firestore';
 
 export type UserRole = 'ADMIN' | 'SUPER_ADMIN';
 
@@ -130,7 +130,7 @@ export const login = async (email: string, password: string): Promise<{ success:
   }
 };
 
-export const logout = async (): Promise<void> => {
+export async function logout(): Promise<void> {
     return signOut(auth);
 };
 
