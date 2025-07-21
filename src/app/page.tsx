@@ -162,6 +162,9 @@ export default function Home() {
               <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
             </Link>
             <div className="flex items-center gap-2">
+              <Button asChild variant="outline" size="sm">
+                  <Link href="/admin">Admin</Link>
+              </Button>
               <Button onClick={openAddForm} className="bg-primary/90 hover:bg-primary text-primary-foreground">
                 <PlusCircle className="mr-2 h-5 w-5" />
                 Post a Job

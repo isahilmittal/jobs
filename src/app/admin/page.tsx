@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   ColumnDef,
@@ -42,16 +43,18 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit } from "lucide-react";
+import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut } from "lucide-react";
+import withAuth from "@/components/with-auth";
+import { logout } from "@/lib/auth";
 
-export default function AdminPage() {
+function AdminPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const router = useRouter();
   
   useEffect(() => {
     const storedJobs = localStorage.getItem('jobs');
@@ -63,6 +66,11 @@ export default function AdminPage() {
   useEffect(() => {
     localStorage.setItem('jobs', JSON.stringify(jobs));
   }, [jobs]);
+
+  const handleLogout = () => {
+    logout();
+    router.push('/login');
+  };
 
   const handleAddJob = (data: Omit<Job, 'id' | 'createdAt'>) => {
     const newJob: Job = {
@@ -216,6 +224,10 @@ export default function AdminPage() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">Admin Dashboard</h1>
             </Link>
+             <Button variant="ghost" size="sm" onClick={handleLogout}>
+              <LogOut className="mr-2 h-4 w-4" />
+              Logout
+            </Button>
           </div>
         </header>
 
@@ -308,3 +320,6 @@ export default function AdminPage() {
     </>
   );
 }
+
+
+export default withAuth(AdminPage);
