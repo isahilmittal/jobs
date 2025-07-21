@@ -91,11 +91,11 @@ export const login = async (email: string, password: string): Promise<{ success:
   }
 };
 
-export const logout = (): Promise<void> => {
+export const logout = async (): Promise<void> => {
     return signOut(auth);
 };
 
-export const getCurrentUser = (): Promise<User | null> => {
+export const getCurrentUser = async (): Promise<User | null> => {
     return new Promise((resolve) => {
         const unsubscribe = onAuthStateChanged(auth, user => {
             unsubscribe();
