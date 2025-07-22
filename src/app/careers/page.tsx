@@ -14,6 +14,7 @@ import { addSubscriber } from "@/lib/subscribers";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 
 export default function CareersPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
