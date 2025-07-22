@@ -1,14 +1,19 @@
 
 "use client";
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
-import { Briefcase, Plus, Trash2, Printer, Wand2 } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Printer, Wand2, Loader2, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Separator } from '@/components/ui/separator';
 import { useReactToPrint } from 'react-to-print';
+import { useToast } from '@/hooks/use-toast';
+import { enhanceResume, EnhanceResumeInput, EnhanceResumeOutput } from '@/ai/flows/enhance-resume';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Progress } from '@/components/ui/progress';
 
 type Experience = {
   id: number;
@@ -37,6 +42,8 @@ type ResumeData = {
   education: Education[];
   skills: string;
 };
+
+type AiFeedback = Omit<EnhanceResumeOutput, 'enhancedSummary' | 'enhancedExperience'>;
 
 // ATS-friendly resume template component
 const ResumePreview = ({ data }: { data: ResumeData }) => {
@@ -125,6 +132,9 @@ export default function ResumeBuilderPage() {
         skills: 'JavaScript, React, Next.js, TypeScript, Node.js, Python, SQL, AWS'
     });
     
+    const [aiFeedback, setAiFeedback] = useState<AiFeedback | null>(null);
+    const [isGenerating, startGenerationTransition] = useTransition();
+    const { toast } = useToast();
     const resumePreviewRef = useRef<HTMLDivElement>(null);
 
     const handlePrint = useReactToPrint({
@@ -177,6 +187,43 @@ export default function ResumeBuilderPage() {
             education: prev.education.filter(edu => edu.id !== id)
         }));
     };
+    
+    const handleEnhanceResume = () => {
+        const resumeInput: EnhanceResumeInput = {
+            summary: resumeData.summary,
+            // Exclude 'id' from experience before sending to AI
+            experience: resumeData.experience.map(({id, ...rest}) => rest),
+            skills: resumeData.skills,
+        };
+
+        startGenerationTransition(async () => {
+            try {
+                const result = await enhanceResume(resumeInput);
+
+                // Update summary
+                setResumeData(prev => ({
+                    ...prev,
+                    summary: result.enhancedSummary,
+                    experience: prev.experience.map((exp, index) => ({
+                        ...exp,
+                        description: result.enhancedExperience[index]?.enhancedDescription || exp.description
+                    })),
+                    skills: `${prev.skills}, ${result.suggestedSkills.join(', ')}`
+                }));
+
+                setAiFeedback({
+                    feedback: result.feedback,
+                    score: result.score,
+                    suggestedSkills: result.suggestedSkills,
+                });
+                
+                toast({ title: "Resume Enhanced!", description: "AI has updated your resume." });
+            } catch (error) {
+                console.error("Failed to enhance resume:", error);
+                toast({ variant: "destructive", title: "Error", description: "Could not enhance resume. Please try again." });
+            }
+        });
+    }
 
 
   return (
@@ -200,8 +247,43 @@ export default function ResumeBuilderPage() {
         <div className="bg-card p-6 rounded-lg shadow-md h-[calc(100vh-100px)] overflow-y-auto">
           <div className="flex justify-between items-center mb-6">
              <h2 className="text-2xl font-bold">Resume Editor</h2>
-             <Button onClick={handlePrint}><Printer className="mr-2"/>Export to PDF</Button>
+             <div className="flex gap-2">
+                <Button onClick={handleEnhanceResume} variant="outline" disabled={isGenerating}>
+                    {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : <Sparkles className="mr-2 text-primary"/>}
+                    Enhance with AI
+                </Button>
+                <Button onClick={handlePrint}><Printer className="mr-2"/>Export to PDF</Button>
+             </div>
           </div>
+
+          {aiFeedback && (
+            <Card className="mb-6 bg-primary/5 border-primary/20">
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2">AI Feedback</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    <div>
+                        <div className="flex justify-between items-center mb-1">
+                            <h4 className="font-semibold">Overall Score</h4>
+                            <span className="font-bold text-primary">{aiFeedback.score}/100</span>
+                        </div>
+                        <Progress value={aiFeedback.score} className="h-2" />
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2">Suggestions:</h4>
+                        <p className="text-sm text-muted-foreground">{aiFeedback.feedback}</p>
+                    </div>
+                    <div>
+                        <h4 className="font-semibold mb-2">Suggested Skills to Add:</h4>
+                         <div className="flex flex-wrap gap-2">
+                            {aiFeedback.suggestedSkills.map(skill => (
+                                <Badge key={skill} variant="secondary">{skill}</Badge>
+                            ))}
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+          )}
 
           <div className="space-y-6">
             {/* Personal Details */}
