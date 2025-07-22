@@ -1,20 +1,21 @@
 
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useTransition } from 'react';
 import Link from 'next/link';
-import { useParams, useRouter } from 'next/navigation';
+import { useParams } from 'next/navigation';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Job } from '@/lib/types';
 import { getJob, getJobs } from '@/lib/jobs';
 import { addApplicant } from '@/lib/applicants';
+import { parseResumeFromFile, ParseResumeOutput } from '@/ai/flows/parse-resume-from-file';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { BarChart, Calendar, ChevronLeft, Loader2, Tag, FileText, Link as LinkIcon, Dot } from 'lucide-react';
@@ -33,8 +34,17 @@ const applicationSchema = z.object({
 
 type ApplicationFormValues = z.infer<typeof applicationSchema>;
 
+function fileToDataUri(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = reject;
+        reader.readAsDataURL(file);
+    });
+}
+
 function ApplicationForm({ job, onFormSubmit }: { job: Job, onFormSubmit: () => void }) {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, startSubmittingTransition] = useTransition();
   const { toast } = useToast();
 
   const form = useForm<ApplicationFormValues>({
@@ -42,21 +52,39 @@ function ApplicationForm({ job, onFormSubmit }: { job: Job, onFormSubmit: () => 
     defaultValues: { name: '', email: '', coverLetter: '' },
   });
 
-  const onSubmit = async (data: ApplicationFormValues) => {
-    setIsSubmitting(true);
-    await addApplicant({
-      jobId: job.id,
-      name: data.name,
-      email: data.email,
-      resume: data.resume[0].name,
-      coverLetter: data.coverLetter,
+  const onSubmit = (data: ApplicationFormValues) => {
+    startSubmittingTransition(async () => {
+        try {
+            const resumeFile = data.resume[0];
+            const resumeDataUri = await fileToDataUri(resumeFile);
+            
+            // We can optionally parse the resume to pre-fill or use the data,
+            // but for this flow, we'll just save the applicant info directly.
+            // const parsedData = await parseResumeFromFile({ resumeDataUri });
+
+            await addApplicant({
+              jobId: job.id,
+              name: data.name,
+              email: data.email,
+              resume: resumeFile.name, // Store filename
+              coverLetter: data.coverLetter,
+            });
+
+            toast({
+              title: 'Application Submitted!',
+              description: 'Thank you for applying. We will be in touch.',
+            });
+            onFormSubmit();
+
+        } catch (error) {
+            console.error("Application submission error:", error);
+            toast({
+                variant: 'destructive',
+                title: 'Submission Failed',
+                description: 'There was an error submitting your application. Please try again.',
+            });
+        }
     });
-    setIsSubmitting(false);
-    toast({
-      title: 'Application Submitted!',
-      description: 'Thank you for applying. We will be in touch.',
-    });
-    onFormSubmit();
   };
   
   return (
@@ -64,7 +92,19 @@ function ApplicationForm({ job, onFormSubmit }: { job: Job, onFormSubmit: () => 
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <FormField control={form.control} name="name" render={({ field }) => (<FormItem><FormLabel>Full Name</FormLabel><FormControl><Input placeholder="John Doe" {...field} /></FormControl><FormMessage /></FormItem>)} />
         <FormField control={form.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email Address</FormLabel><FormControl><Input placeholder="you@example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
-        <FormField control={form.control} name="resume" render={({ field }) => (<FormItem><FormLabel>Resume (PDF, DOCX)</FormLabel><FormControl><Input type="file" accept=".pdf,.doc,.docx" onChange={(e) => field.onChange(e.target.files)} /></FormControl><FormMessage /></FormItem>)} />
+        <FormField control={form.control} name="resume" render={({ field }) => (
+            <FormItem>
+                <FormLabel>Resume (PDF, DOCX)</FormLabel>
+                <FormControl>
+                    <Input 
+                        type="file" 
+                        accept=".pdf,.doc,.docx"
+                        {...form.register("resume")}
+                    />
+                </FormControl>
+                <FormMessage />
+            </FormItem>
+        )} />
         <FormField control={form.control} name="coverLetter" render={({ field }) => (<FormItem><FormLabel>Cover Letter (Optional)</FormLabel><FormControl><Textarea placeholder="Tell us why you're a great fit for this role..." {...field} /></FormControl><FormMessage /></FormItem>)} />
         <Button type="submit" className="w-full" disabled={isSubmitting}>{isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Submit Application</Button>
       </form>
@@ -86,13 +126,19 @@ export default function JobApplicationPage() {
     async function fetchJobData() {
       if (id) {
         setIsLoading(true);
-        const [currentJob, jobsList] = await Promise.all([
-            getJob(id),
-            getJobs()
-        ]);
-        setJob(currentJob);
-        setAllJobs(jobsList.filter(j => j.id !== id));
-        setIsLoading(false);
+        try {
+            const [currentJob, jobsList] = await Promise.all([
+                getJob(id),
+                getJobs()
+            ]);
+            setJob(currentJob);
+            setAllJobs(jobsList.filter(j => j.id !== id));
+        } catch(error) {
+            console.error("Failed to fetch job data:", error);
+            setJob(null);
+        } finally {
+            setIsLoading(false);
+        }
       }
     }
     fetchJobData();
@@ -114,7 +160,7 @@ export default function JobApplicationPage() {
     return (
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
-                <Button size="lg" className="w-full md:w-auto">View & Apply <FileText className="ml-2 h-4 w-4"/></Button>
+                <Button size="lg" className="w-full md:w-auto">Apply Now <FileText className="ml-2 h-4 w-4"/></Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[425px]">
                 <DialogHeader>
@@ -138,7 +184,7 @@ export default function JobApplicationPage() {
               <h1 className="text-2xl font-bold mb-4">Job not found</h1>
               <p className="text-muted-foreground mb-6">The job you are looking for does not exist or has been removed.</p>
               <Button asChild>
-                  <Link href="/"><ChevronLeft className="mr-2 h-4 w-4" />Back to Job Board</Link>
+                  <Link href="/careers"><ChevronLeft className="mr-2 h-4 w-4" />Back to All Jobs</Link>
               </Button>
           </div>
       )
@@ -168,7 +214,7 @@ export default function JobApplicationPage() {
                     <div className="space-y-6">
                         <div>
                             <h3 className="text-xl font-semibold text-foreground mb-3">Job Description</h3>
-                            <p className="text-muted-foreground">{job.description}</p>
+                            <p className="text-muted-foreground whitespace-pre-wrap">{job.description}</p>
                         </div>
 
                         <div>
@@ -241,7 +287,7 @@ export default function JobApplicationPage() {
          <main className="border-r">
              <MainContent />
          </main>
-         <aside className="hidden md:block">
+         <aside className="hidden md:block bg-muted/20">
              <ScrollArea className="h-full">
                  <div className="p-4">
                      <h2 className="text-xl font-bold mb-4">Other Jobs</h2>

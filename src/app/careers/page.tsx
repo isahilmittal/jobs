@@ -13,6 +13,7 @@ import { getJobs, addInitialJobs } from "@/lib/jobs";
 import { addSubscriber } from "@/lib/subscribers";
 import { useToast } from "@/hooks/use-toast";
 import { ThemeToggle } from "@/components/theme-toggle";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function CareersPage() {
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -27,17 +28,22 @@ export default function CareersPage() {
     async function fetchData() {
       setIsLoading(true);
       
-      let fetchedJobs = await getJobs(true); // Fetch all jobs, including expired ones
-      if (fetchedJobs.length === 0) {
-        await addInitialJobs();
-        fetchedJobs = await getJobs(true); // Re-fetch after seeding
+      try {
+        let fetchedJobs = await getJobs(true); // Fetch all jobs, including expired ones
+        if (fetchedJobs.length === 0) {
+          await addInitialJobs();
+          fetchedJobs = await getJobs(true); // Re-fetch after seeding
+        }
+        setJobs(fetchedJobs);
+      } catch (error) {
+        console.error("Failed to fetch jobs:", error);
+        toast({ variant: "destructive", title: "Error", description: "Could not load job listings." });
+      } finally {
+        setIsLoading(false);
       }
-      setJobs(fetchedJobs);
-
-      setIsLoading(false);
     }
     fetchData();
-  }, []);
+  }, [toast]);
 
   const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
       e.preventDefault();
@@ -63,11 +69,11 @@ export default function CareersPage() {
   };
 
   const allTags = useMemo(() => {
-    if (!jobs || jobs.length === 0) return [];
+    if (isLoading || jobs.length === 0) return [];
     const tagsSet = new Set<string>();
     jobs.forEach(job => job.tags.forEach(tag => tagsSet.add(tag)));
     return Array.from(tagsSet).sort();
-  }, [jobs]);
+  }, [jobs, isLoading]);
 
   const filteredJobs = useMemo(() => {
     return jobs.filter(job => {
@@ -128,29 +134,41 @@ export default function CareersPage() {
                    <Tag className="h-5 w-5 text-muted-foreground" />
                    <h3 className="text-sm font-medium text-foreground">Filter by Tags</h3>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.slice(0, 7).map(tag => (
-                    <Badge 
-                      key={tag}
-                      variant={selectedTags.includes(tag) ? "default" : "secondary"}
-                      onClick={() => toggleTagSelection(tag)}
-                      className="cursor-pointer transition-all hover:scale-105"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                  {selectedTags.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedTags([])} className="h-auto py-0.5 px-2">
-                      <X className="mr-1 h-3 w-3" /> Clear
-                    </Button>
-                  )}
-                </div>
+                 {isLoading ? (
+                    <div className="flex flex-wrap gap-2">
+                      {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-6 w-20 rounded-full" />)}
+                    </div>
+                 ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {allTags.slice(0, 7).map(tag => (
+                        <Badge 
+                          key={tag}
+                          variant={selectedTags.includes(tag) ? "default" : "secondary"}
+                          onClick={() => toggleTagSelection(tag)}
+                          className="cursor-pointer transition-all hover:scale-105"
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                      {selectedTags.length > 0 && (
+                        <Button variant="ghost" size="sm" onClick={() => setSelectedTags([])} className="h-auto py-0.5 px-2">
+                          <X className="mr-1 h-3 w-3" /> Clear
+                        </Button>
+                      )}
+                    </div>
+                 )}
               </div>
             </div>
           </div>
             {isLoading ? (
-                 <div className="flex justify-center items-center py-16">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {[...Array(6)].map((_, i) => (
+                        <Card key={i}>
+                            <CardHeader><Skeleton className="h-5 w-3/4" /><Skeleton className="h-4 w-1/2" /></CardHeader>
+                            <CardContent className="space-y-2"><Skeleton className="h-4 w-full" /><Skeleton className="h-4 w-5/6" /></CardContent>
+                            <CardFooter><Skeleton className="h-10 w-full" /></CardFooter>
+                        </Card>
+                    ))}
                 </div>
             ) : filteredJobs.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
