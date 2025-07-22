@@ -152,7 +152,7 @@ export default function AgencyHomePage() {
               <h3 className="text-3xl md:text-4xl font-bold text-foreground">Our Work</h3>
                <p className="text-md text-muted-foreground mt-3 max-w-xl mx-auto">We're proud of the solutions we've delivered.</p>
             </div>
-            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+            <div className="grid md:grid-cols-3 gap-8">
                 {portfolio.map((item, index) => (
                     <Card key={index} className="flex flex-col overflow-hidden bg-card/50 transition-shadow hover:shadow-xl">
                         <CardHeader className="p-0">
