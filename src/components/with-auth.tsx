@@ -17,7 +17,7 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
       const checkAuth = async () => {
         const currentUser = await getCurrentUser();
         if (!currentUser) {
-          router.replace('/login');
+          router.push('/login');
         } else {
           setUser(currentUser);
           setIsLoading(false);
