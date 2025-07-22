@@ -67,6 +67,7 @@ export default function CareersPage() {
   };
 
   const allTags = useMemo(() => {
+    if (!jobs || jobs.length === 0) return [];
     const tagsSet = new Set<string>();
     jobs.forEach(job => job.tags.forEach(tag => tagsSet.add(tag)));
     return Array.from(tagsSet).sort();
