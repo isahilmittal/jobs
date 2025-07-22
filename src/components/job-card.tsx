@@ -39,9 +39,10 @@ interface JobCardProps {
   showAdminActions: boolean;
   onEdit?: (job: Job) => void;
   onDelete?: (jobId: string) => void;
+  animationDelay?: number;
 }
 
-export function JobCard({ job, showAdminActions, onEdit, onDelete }: JobCardProps) {
+export function JobCard({ job, showAdminActions, onEdit, onDelete, animationDelay = 0 }: JobCardProps) {
   const ApplyButton = () => {
     if (job.applicationType === 'link') {
       return (
@@ -64,7 +65,10 @@ export function JobCard({ job, showAdminActions, onEdit, onDelete }: JobCardProp
   };
   
   return (
-    <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card group border-border/60 hover:border-primary/50">
+    <Card 
+      className="flex flex-col h-full transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card group border-border/60 hover:border-primary/50 opacity-0 animate-fade-in-up"
+      style={{ animationDelay: `${animationDelay}ms` }}
+    >
       <CardHeader>
         <div className="flex justify-between items-start">
           <div className="space-y-1 pr-2">
