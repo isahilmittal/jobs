@@ -34,9 +34,31 @@ const getUserRole = async (uid: string): Promise<UserRole | null> => {
 // const setUserRole = async (uid: string, email: string, role: UserRole) => { ... }
 
 export const ensureSuperAdminExists = async () => {
-    // This function is now a no-op as we are not using Firestore.
-    console.log("Firestore is disconnected. SUPER_ADMIN check is skipped.");
-}
+    const superAdminEmail = 'super@admin.com';
+    const superAdminPassword = 'password';
+
+    try {
+        // Attempt to sign in to see if the user exists. This is a common workaround.
+        // We will sign out immediately after.
+        const userCredential = await signInWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
+        await signOut(auth); // Sign out immediately
+        console.log('Super admin already exists.');
+    } catch (error: any) {
+        if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found') {
+            // User does not exist, so create them
+            try {
+                await createUserWithEmailAndPassword(auth, superAdminEmail, superAdminPassword);
+                console.log('Super admin user created successfully.');
+                await signOut(auth); // Sign out after creation
+            } catch (createError: any) {
+                console.error('Error creating super admin:', createError);
+            }
+        } else {
+            // Another error occurred during the check
+            console.error('Error checking for super admin:', error);
+        }
+    }
+};
 
 export const addAdminUser = async (email: string, password: string): Promise<{success: boolean, message: string}> => {
     // This now only creates a user in Firebase Auth, without assigning a role in a database.
