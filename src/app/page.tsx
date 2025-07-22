@@ -49,7 +49,7 @@ const team = [
         role: 'Developer / Head',
         description: 'Leads our development team and oversees all technical aspects of our client projects.',
         avatar: 'SM',
-        image: 'https://placehold.co/100x100.png',
+        image: 'https://storage.googleapis.com/aifire-757c9.appspot.com/users%2FwYtc42jyfXhb16P3gevp62d5yC22%2Fprojects%2Fdefault%2F9f04153a812e4f02b3699c2d7658c14a.png',
         imageHint: 'male developer portrait'
     },
     {
@@ -57,7 +57,7 @@ const team = [
         role: 'UI/UX / Content',
         description: 'Creates engaging user experiences and develops compelling content for our clients.',
         avatar: 'NS',
-        image: 'https://placehold.co/100x100.png',
+        image: 'https://storage.googleapis.com/aifire-757c9.appspot.com/users%2FwYtc42jyfXhb16P3gevp62d5yC22%2Fprojects%2Fdefault%2F3a3d548b8989408b8813a07a14e9f905.png',
         imageHint: 'male designer portrait'
     }
 ];

@@ -11,7 +11,7 @@ const teamMembers = [
       name: 'Sahil Mittal', 
       role: 'Developer / Head', 
       avatar: 'SM', 
-      image: 'https://placehold.co/300x300.png', 
+      image: 'https://storage.googleapis.com/aifire-757c9.appspot.com/users%2FwYtc42jyfXhb16P3gevp62d5yC22%2Fprojects%2Fdefault%2F9f04153a812e4f02b3699c2d7658c14a.png', 
       hint: 'male developer portrait',
       bio: "Sahil leads our development team with a passion for clean code and scalable architecture. With over a decade of experience, he oversees all technical aspects of our client projects, ensuring robust and high-performance solutions. His expertise in both frontend and backend technologies allows him to guide projects from conception to deployment seamlessly."
   },
@@ -19,7 +19,7 @@ const teamMembers = [
       name: 'Nitiesh Singh', 
       role: 'UI/UX / Content', 
       avatar: 'NS', 
-      image: 'https://placehold.co/300x300.png', 
+      image: 'https://storage.googleapis.com/aifire-757c9.appspot.com/users%2FwYtc42jyfXhb16P3gevp62d5yC22%2Fprojects%2Fdefault%2F3a3d548b8989408b8813a07a14e9f905.png', 
       hint: 'male designer portrait',
       bio: "Nitiesh is the creative force behind our user-centric designs and compelling content strategies. He specializes in creating engaging user experiences that are not only visually appealing but also highly intuitive. Nitiesh works closely with clients to translate their brand's story into digital experiences that resonate with their audience."
   },
