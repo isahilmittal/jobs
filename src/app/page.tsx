@@ -1,12 +1,22 @@
 
+"use client";
+
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart, Search, PenTool, Lightbulb, TrendingUp, Users } from 'lucide-react';
 import Image from 'next/image';
 import { Card } from '@/components/ui/card';
+import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
+import Lottie from 'lottie-react';
+
+const marketingLottieUrl = "https://assets7.lottiefiles.com/packages/lf20_t87p9b6w.json";
+const webDevLottieUrl = "https://assets1.lottiefiles.com/packages/lf20_caugh3q3.json";
+const aiSolutionsLottieUrl = "https://assets10.lottiefiles.com/packages/lf20_bwnh5sre.json";
+
 
 export default function AgencyHomePage() {
   return (
+    <ParallaxProvider>
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="bg-background/80 border-b sticky top-0 z-20 backdrop-blur-sm">
@@ -31,8 +41,10 @@ export default function AgencyHomePage() {
       {/* Main Content */}
       <main className="flex-grow">
         {/* Hero Section */}
-        <section className="relative text-center py-24 md:py-32 bg-background">
-          <div className="absolute inset-0.5 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+        <section className="relative text-center py-24 md:py-32 bg-background overflow-hidden">
+          <Parallax translateY={[-20, 20]}>
+            <div className="absolute inset-0.5 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+          </Parallax>
           <div className="container mx-auto px-4">
             <h2 className="text-4xl md:text-6xl font-extrabold text-foreground tracking-tighter">
               Digital Marketing & Web Solutions by <span className="text-primary">Analyzed.in</span>
@@ -60,18 +72,24 @@ export default function AgencyHomePage() {
             </div>
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
-                <TrendingUp className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h4 className="text-xl font-semibold mb-2">Digital Marketing</h4>
+                 <div className="h-32 flex justify-center items-center">
+                    <Lottie animationData={marketingLottieUrl} loop={true} style={{height: 150}}/>
+                 </div>
+                <h4 className="text-xl font-semibold mb-2 mt-4">Digital Marketing</h4>
                 <p className="text-muted-foreground">From SEO to PPC, we create campaigns that convert and build your brand's online presence.</p>
               </Card>
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
-                <PenTool className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h4 className="text-xl font-semibold mb-2">Web Development</h4>
+                 <div className="h-32 flex justify-center items-center">
+                    <Lottie animationData={webDevLottieUrl} loop={true} style={{height: 150}}/>
+                 </div>
+                <h4 className="text-xl font-semibold mb-2 mt-4">Web Development</h4>
                 <p className="text-muted-foreground">We design and build beautiful, high-performance websites tailored to your business needs.</p>
               </Card>
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
-                <Lightbulb className="h-12 w-12 text-primary mx-auto mb-4" />
-                <h4 className="text-xl font-semibold mb-2">AI-Powered Solutions</h4>
+                 <div className="h-32 flex justify-center items-center">
+                    <Lottie animationData={aiSolutionsLottieUrl} loop={true} style={{height: 150}}/>
+                 </div>
+                <h4 className="text-xl font-semibold mb-2 mt-4">AI-Powered Solutions</h4>
                 <p className="text-muted-foreground">Leverage our expertise in AI to build innovative features, like the integrated job platform.</p>
               </Card>
             </div>
@@ -155,5 +173,6 @@ export default function AgencyHomePage() {
         </div>
       </footer>
     </div>
+    </ParallaxProvider>
   );
 }
