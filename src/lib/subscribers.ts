@@ -1,47 +1,39 @@
 
 'use server';
 
-import { db } from '@/lib/firebase';
-import { collection, addDoc, getDocs, query, where, Timestamp, serverTimestamp } from 'firebase/firestore';
+// Firestore imports are removed.
 import { z } from 'zod';
+import type { Subscriber } from './types';
 
 const emailSchema = z.string().email();
 
+// In-memory array to store subscribers
+let memorySubscribers: Subscriber[] = [];
+
+
 export async function addSubscriber(email: string): Promise<{success: boolean; message: string}> {
+    console.log("Using in-memory subscribers data. Firestore is disconnected.");
     const validation = emailSchema.safeParse(email);
     if (!validation.success) {
         return { success: false, message: 'Invalid email address provided.' };
     }
 
-    const subscribersCol = collection(db, 'subscribers');
-
     // Check if email already exists
-    const q = query(subscribersCol, where("email", "==", email));
-    const querySnapshot = await getDocs(q);
-    if (!querySnapshot.empty) {
+    if (memorySubscribers.some(sub => sub.email === email)) {
         return { success: false, message: 'This email is already subscribed.' };
     }
-
-    try {
-        await addDoc(subscribersCol, {
-            email: email,
-            subscribedAt: serverTimestamp(),
-        });
-        return { success: true, message: 'Successfully subscribed!' };
-    } catch (error: any) {
-        console.error("Error adding subscriber: ", error);
-        return { success: false, message: 'An unexpected error occurred.' };
-    }
+    
+    const newSubscriber: Subscriber = {
+        id: `sub-${memorySubscribers.length + 1}-${Date.now()}`,
+        email,
+        subscribedAt: new Date(),
+    };
+    memorySubscribers.push(newSubscriber);
+    return { success: true, message: 'Successfully subscribed!' };
 }
 
 
 export async function getSubscriberCount(): Promise<number> {
-    try {
-        const subscribersCol = collection(db, 'subscribers');
-        const snapshot = await getDocs(subscribersCol);
-        return snapshot.size;
-    } catch (error) {
-        console.error("Error getting subscriber count:", error);
-        return 0;
-    }
+    console.log("Using in-memory subscribers data. Firestore is disconnected.");
+    return memorySubscribers.length;
 }

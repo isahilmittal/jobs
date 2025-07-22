@@ -1,80 +1,19 @@
 
 'use server';
 
-import { db } from '@/lib/firebase';
 import { Job } from '@/lib/types';
-import { collection, addDoc, getDocs, doc, updateDoc, deleteDoc, query, orderBy, getDoc, Timestamp, where, serverTimestamp } from 'firebase/firestore';
+// Firestore imports are removed.
 
-// Helper to convert Firestore Timestamps to Dates in a job object
-function jobFromDoc(docSnapshot: any): Job {
-    const data = docSnapshot.data();
-    const createdAt = data.createdAt;
-    return {
-        ...data,
-        id: docSnapshot.id,
-        createdAt: createdAt instanceof Timestamp ? createdAt.toDate() : new Date(),
-    };
-}
+// In-memory array to store jobs since Firestore is disconnected.
+let memoryJobs: Job[] = [];
+let initialized = false;
 
+// Helper to create a deep copy
+const deepCopy = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
 
-export async function getJobs(includeExpired = false): Promise<Job[]> {
-    const jobsCol = collection(db, 'jobs');
-    
-    let q;
-    if (includeExpired) {
-        // Fetch all jobs, ordered by creation date
-        q = query(jobsCol, orderBy('createdAt', 'desc'));
-    } else {
-        // Fetch only active jobs (created in the last 7 days)
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-        q = query(jobsCol, where('createdAt', '>=', Timestamp.fromDate(sevenDaysAgo)), orderBy('createdAt', 'desc'));
-    }
-
-    try {
-        const jobSnapshot = await getDocs(q);
-        const jobList = jobSnapshot.docs.map(doc => jobFromDoc(doc));
-        return jobList;
-    } catch(e) {
-        console.error("Error fetching jobs", e);
-        return [];
-    }
-}
-
-export async function getJob(id: string): Promise<Job | null> {
-    const jobRef = doc(db, "jobs", id);
-    const jobSnap = await getDoc(jobRef);
-    if (jobSnap.exists()) {
-        return jobFromDoc(jobSnap);
-    } else {
-        return null;
-    }
-}
-
-
-export async function addJob(jobData: Omit<Job, 'id' | 'createdAt'>): Promise<Job> {
-    const jobsCol = collection(db, 'jobs');
-    const docRef = await addDoc(jobsCol, {
-        ...jobData,
-        createdAt: serverTimestamp(),
-    });
-
-    const newJobSnap = await getDoc(docRef);
-    return jobFromDoc(newJobSnap);
-}
-
-export async function updateJob(jobId: string, jobData: Partial<Omit<Job, 'id' | 'createdAt' | 'createdBy'>>): Promise<void> {
-    const jobRef = doc(db, 'jobs', jobId);
-    await updateDoc(jobRef, jobData);
-}
-
-export async function deleteJob(jobId: string): Promise<void> {
-    const jobRef = doc(db, 'jobs', jobId);
-    await deleteDoc(jobRef);
-}
-
-export async function addInitialJobs() {
-    const initialJobs: Omit<Job, 'id'| 'createdAt'>[] = [
+function initializeMemoryJobs() {
+    if (initialized) return;
+    const initialJobs: Omit<Job, 'id'>[] = [
       {
         title: "Senior Frontend Developer",
         description: "We are looking for an experienced Frontend Developer to join our team. You will be responsible for building the 'client-side' of our web applications. You should be able to translate our company and customer needs into functional and appealing interactive applications.",
@@ -82,6 +21,7 @@ export async function addInitialJobs() {
         applicationType: 'link',
         applyLink: "#",
         createdBy: 'admin@example.com',
+        createdAt: new Date()
       },
       {
         title: "UX/UI Designer",
@@ -89,6 +29,7 @@ export async function addInitialJobs() {
         tags: ["Figma", "UX", "UI", "Prototyping"],
         applicationType: 'form',
         createdBy: 'manager@example.com',
+        createdAt: new Date()
       },
        {
         title: "Cloud Solutions Architect",
@@ -97,6 +38,7 @@ export async function addInitialJobs() {
         applicationType: 'link',
         applyLink: "#",
         createdBy: 'admin@example.com',
+        createdAt: new Date()
       },
       {
         title: "Product Manager - AI/ML",
@@ -104,33 +46,67 @@ export async function addInitialJobs() {
         tags: ["Product Management", "AI", "Machine Learning", "Agile"],
         applicationType: 'form',
         createdBy: 'manager@example.com',
-      },
-      {
-        title: "Data Scientist",
-        description: "We're looking for a Data Scientist to analyze large amounts of raw information to find patterns that will help improve our company. We will rely on you to build data products to extract valuable business insights.",
-        tags: ["Python", "R", "SQL", "Big Data", "Statistics"],
-        applicationType: 'link',
-        applyLink: "#",
-        createdBy: 'admin@example.com',
-      },
-      {
-        title: "DevOps Engineer",
-        description: "We are seeking a DevOps Engineer to help us build functional systems that improve customer experience. DevOps Engineer responsibilities include deploying product updates, identifying production issues and implementing integrations.",
-        tags: ["Docker", "Kubernetes", "CI/CD", "Terraform", "Ansible"],
-        applicationType: 'link',
-        applyLink: "#",
-        createdBy: 'manager@example.com',
-      },
-      {
-        title: "Full-Stack Engineer",
-        description: "We're hiring a Full-Stack Engineer to work on both our front-end and back-end services. You'll be building new features, fixing bugs, and improving the overall performance and reliability of our platform.",
-        tags: ["Node.js", "React", "PostgreSQL", "GraphQL", "TypeScript"],
-        applicationType: 'form',
-        createdBy: 'admin@example.com',
+        createdAt: new Date()
       },
     ];
 
-    for (const job of initialJobs) {
-        await addJob(job);
+    memoryJobs = initialJobs.map((job, index) => ({
+      ...job,
+      id: `job-${index + 1}-${Date.now()}`,
+      createdAt: new Date(new Date().setDate(new Date().getDate() - index)) // Spread out creation dates
+    }));
+    initialized = true;
+}
+
+
+export async function getJobs(includeExpired = false): Promise<Job[]> {
+    initializeMemoryJobs();
+    console.log("Using in-memory jobs data. Firestore is disconnected.");
+    
+    if (includeExpired) {
+        return deepCopy(memoryJobs).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
     }
+    
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    
+    return deepCopy(memoryJobs)
+      .filter(job => new Date(job.createdAt) >= sevenDaysAgo)
+      .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+}
+
+export async function getJob(id: string): Promise<Job | null> {
+    initializeMemoryJobs();
+    const job = memoryJobs.find(j => j.id === id);
+    return job ? deepCopy(job) : null;
+}
+
+
+export async function addJob(jobData: Omit<Job, 'id' | 'createdAt'>): Promise<Job> {
+    initializeMemoryJobs();
+    const newJob: Job = {
+        ...jobData,
+        id: `job-${memoryJobs.length + 1}-${Date.now()}`,
+        createdAt: new Date(),
+    };
+    memoryJobs.push(newJob);
+    return deepCopy(newJob);
+}
+
+export async function updateJob(jobId: string, jobData: Partial<Omit<Job, 'id' | 'createdAt' | 'createdBy'>>): Promise<void> {
+    initializeMemoryJobs();
+    const jobIndex = memoryJobs.findIndex(j => j.id === jobId);
+    if (jobIndex > -1) {
+        memoryJobs[jobIndex] = { ...memoryJobs[jobIndex], ...jobData };
+    }
+}
+
+export async function deleteJob(jobId: string): Promise<void> {
+    initializeMemoryJobs();
+    memoryJobs = memoryJobs.filter(j => j.id !== jobId);
+}
+
+export async function addInitialJobs() {
+    // This function is now just an alias for the initialization.
+    initializeMemoryJobs();
 }

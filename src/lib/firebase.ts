@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
-import { getFirestore } from "firebase/firestore";
+// Firestore is no longer used, so getFirestore is removed.
+// import { getFirestore } from "firebase/firestore";
 import { getAnalytics, isSupported } from "firebase/analytics";
 
 // Your web app's Firebase configuration pulled from environment variables
@@ -18,7 +19,7 @@ const firebaseConfig = {
 // Initialize Firebase for SSR
 const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
-const db = getFirestore(app);
+// const db = getFirestore(app); // We no longer initialize Firestore
 
 // Initialize Analytics if supported
 let analytics;
@@ -30,4 +31,5 @@ if (typeof window !== 'undefined') {
   });
 }
 
-export { app, auth, db, analytics };
+// We only export app, auth, and analytics now. db is removed.
+export { app, auth, analytics };

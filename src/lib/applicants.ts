@@ -1,46 +1,28 @@
 
 'use server';
 
-import { db } from '@/lib/firebase';
+// Firestore imports are removed.
 import { Applicant, EnrichedApplicant, Job } from '@/lib/types';
-import { collection, addDoc, getDocs, doc, query, orderBy, Timestamp, serverTimestamp, getDoc } from 'firebase/firestore';
 import { getJobs } from './jobs';
 
-// Helper to convert Firestore Timestamps to Dates in an applicant object
-function applicantFromDoc(docSnapshot: any): Applicant {
-    const data = docSnapshot.data();
-    const appliedAt = data.appliedAt;
-    return {
-        ...data,
-        id: docSnapshot.id,
-        appliedAt: appliedAt instanceof Timestamp ? appliedAt.toDate() : new Date(),
-    };
-}
-
+// In-memory array to store applicants
+let memoryApplicants: Applicant[] = [];
 
 export async function addApplicant(applicantData: Omit<Applicant, 'id' | 'appliedAt'>): Promise<Applicant> {
-    const applicantsCol = collection(db, 'applicants');
-    const docRef = await addDoc(applicantsCol, {
+    console.log("Using in-memory applicants data. Firestore is disconnected.");
+    const newApplicant: Applicant = {
         ...applicantData,
-        appliedAt: serverTimestamp(),
-    });
-    
-    const newApplicantSnap = await getDoc(docRef);
-    return applicantFromDoc(newApplicantSnap);
+        id: `applicant-${memoryApplicants.length + 1}-${Date.now()}`,
+        appliedAt: new Date(),
+    };
+    memoryApplicants.push(newApplicant);
+    return JSON.parse(JSON.stringify(newApplicant));
 }
 
 
 export async function getApplicants(): Promise<Applicant[]> {
-    try {
-        const applicantsCol = collection(db, 'applicants');
-        const q = query(applicantsCol, orderBy('appliedAt', 'desc'));
-        const applicantSnapshot = await getDocs(q);
-        const applicantList = applicantSnapshot.docs.map(doc => applicantFromDoc(doc));
-        return applicantList;
-    } catch(e) {
-        console.error("Error fetching applicants", e);
-        return [];
-    }
+    console.log("Using in-memory applicants data. Firestore is disconnected.");
+    return JSON.parse(JSON.stringify(memoryApplicants.sort((a, b) => b.appliedAt.getTime() - a.appliedAt.getTime())));
 }
 
 export async function getEnrichedApplicants(jobs?: Job[]): Promise<EnrichedApplicant[]> {
