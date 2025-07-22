@@ -4,32 +4,28 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { auth } from '@/lib/firebase';
-import { onAuthStateChanged } from 'firebase/auth';
+import { onAuthStateChanged, type User as FirebaseUser } from 'firebase/auth';
 import { Loader2 } from 'lucide-react';
-import type { User as FirebaseUser } from 'firebase/auth';
 
 const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   const AuthComponent = (props: P) => {
     const router = useRouter();
+    const [user, setUser] = useState<FirebaseUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-      // onAuthStateChanged returns an unsubscribe function that we can call on cleanup
-      const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (!user) {
-          // If the user is not logged in, redirect to the login page.
-          router.push('/login');
+      const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+        if (currentUser) {
+          setUser(currentUser);
         } else {
-          // If the user is logged in, we are no longer loading.
-          setIsLoading(false);
+          router.push('/login');
         }
+        setIsLoading(false);
       });
 
-      // Cleanup subscription on unmount
       return () => unsubscribe();
     }, [router]);
 
-    // While we are verifying the user's authentication state, show a loader.
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-screen bg-background">
@@ -38,7 +34,10 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
       );
     }
 
-    // If we are no longer loading and a user exists, render the wrapped component.
+    if (!user) {
+      return null; 
+    }
+
     return <WrappedComponent {...props} />;
   };
 
