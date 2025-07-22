@@ -91,21 +91,9 @@ export default function Home() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
             </Link>
-             <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
-                <Link href="/about" className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
-                    <Info className="h-4 w-4" /> About Us
-                </Link>
-                <Link href="/team" className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
-                    <Users className="h-4 w-4" /> Our Team
-                </Link>
-             </nav>
-            {isLoggedIn ? (
+            {isLoggedIn && (
                 <Button asChild variant="default" size="sm">
                     <Link href="/admin">Admin Dashboard</Link>
-                </Button>
-            ) : (
-                <Button asChild variant="outline" size="sm">
-                  <Link href="/login"><LogIn className="mr-2 h-4 w-4" />Admin Login</Link>
                 </Button>
             )}
           </div>

@@ -30,9 +30,6 @@ export default function TeamPage() {
             <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About Us</Link>
             <Link href="/team" className="font-bold text-foreground">Our Team</Link>
           </nav>
-           <Button asChild variant="outline" size="sm" className="hidden md:flex">
-             <Link href="/login">Admin Login</Link>
-          </Button>
         </div>
       </header>
       
