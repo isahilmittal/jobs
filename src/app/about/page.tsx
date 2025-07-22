@@ -11,20 +11,19 @@ export default function AboutPage() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
             <BarChart className="h-7 w-7 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">Stellar Digital</h1>
+            <h1 className="text-xl font-bold text-foreground">Analyzed.in</h1>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
-            <Link href="/about" className="font-bold text-foreground">About</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
-            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
+            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
+            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
           </nav>
         </div>
       </header>
       
       <main className="flex-grow container mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">About <span className="text-primary">Stellar Digital</span></h2>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">About <span className="text-primary">Analyzed.in</span></h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">We're on a mission to connect top talent with the world's most innovative companies.</p>
         </div>
 
@@ -38,7 +37,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">Our Story</h3>
-                <p className="text-muted-foreground mt-2">Founded in 2024, Stellar Digital started with a simple idea: to make the job search process more efficient, transparent, and human. We saw the disconnect between talented professionals and the companies that needed them, and we set out to build a bridge.</p>
+                <p className="text-muted-foreground mt-2">Founded in 2024, Analyzed.in started with a simple idea: to make the job search process more efficient, transparent, and human. We saw the disconnect between talented professionals and the companies that needed them, and we set out to build a bridge.</p>
               </div>
             </div>
              <div className="flex items-start gap-4">
@@ -80,7 +79,7 @@ export default function AboutPage() {
       <footer className="bg-card border-t">
           <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-                <p>&copy; {new Date().getFullYear()} Stellar Digital. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} Analyzed.in. All rights reserved.</p>
                 <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
                     <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>

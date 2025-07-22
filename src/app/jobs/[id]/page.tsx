@@ -233,7 +233,7 @@ export default function JobApplicationPage() {
             </Button>
             <Link href="/" className="flex items-center gap-2">
                 <BarChart className="h-6 w-6 text-primary" />
-                <h1 className="text-lg font-bold text-foreground hidden sm:block">Stellar Digital</h1>
+                <h1 className="text-lg font-bold text-foreground hidden sm:block">Analyzed.in</h1>
             </Link>
         </div>
       </header>

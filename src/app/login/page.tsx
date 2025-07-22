@@ -74,7 +74,7 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-primary/10 blur-3xl -z-10"></div>
         <Link href="/" className="flex items-center gap-2 mb-6">
             <BarChart className="h-8 w-8 text-primary" />
-            <h1 className="text-2xl font-bold text-foreground">Stellar Digital</h1>
+            <h1 className="text-2xl font-bold text-foreground">Analyzed.in</h1>
         </Link>
       <Card className="w-full max-w-sm">
         <CardHeader>
