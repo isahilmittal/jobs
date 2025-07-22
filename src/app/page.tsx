@@ -73,21 +73,21 @@ export default function AgencyHomePage() {
             <div className="grid md:grid-cols-3 gap-8">
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
                  <div className="h-32 flex justify-center items-center">
-                    <Lottie animationData={marketingLottieUrl} loop={true} style={{height: 150}}/>
+                    <Lottie path={marketingLottieUrl} loop={true} style={{height: 150}}/>
                  </div>
                 <h4 className="text-xl font-semibold mb-2 mt-4">Digital Marketing</h4>
                 <p className="text-muted-foreground">From SEO to PPC, we create campaigns that convert and build your brand's online presence.</p>
               </Card>
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
                  <div className="h-32 flex justify-center items-center">
-                    <Lottie animationData={webDevLottieUrl} loop={true} style={{height: 150}}/>
+                    <Lottie path={webDevLottieUrl} loop={true} style={{height: 150}}/>
                  </div>
                 <h4 className="text-xl font-semibold mb-2 mt-4">Web Development</h4>
                 <p className="text-muted-foreground">We design and build beautiful, high-performance websites tailored to your business needs.</p>
               </Card>
               <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
                  <div className="h-32 flex justify-center items-center">
-                    <Lottie animationData={aiSolutionsLottieUrl} loop={true} style={{height: 150}}/>
+                    <Lottie path={aiSolutionsLottieUrl} loop={true} style={{height: 150}}/>
                  </div>
                 <h4 className="text-xl font-semibold mb-2 mt-4">AI-Powered Solutions</h4>
                 <p className="text-muted-foreground">Leverage our expertise in AI to build innovative features, like the integrated job platform.</p>
