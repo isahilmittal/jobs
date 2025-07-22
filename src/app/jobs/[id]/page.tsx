@@ -178,8 +178,11 @@ export default function JobApplicationPage() {
             </Link>
         </div>
       </header>
-      <div className="grid md:grid-cols-[350px_1fr] h-[calc(100vh-61px)]">
-         <aside className="hidden md:block border-r">
+      <div className="grid md:grid-cols-[1fr_350px] h-[calc(100vh-61px)]">
+         <main>
+             <MainContent />
+         </main>
+         <aside className="hidden md:block border-l">
              <ScrollArea className="h-full">
                  <div className="p-4">
                      <h2 className="text-xl font-bold mb-4">Job Listings</h2>
@@ -187,9 +190,6 @@ export default function JobApplicationPage() {
                  </div>
              </ScrollArea>
          </aside>
-         <main>
-             <MainContent />
-         </main>
       </div>
     </>
   );
