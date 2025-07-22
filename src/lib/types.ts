@@ -3,6 +3,13 @@ export type Job = {
   id: string;
   title: string;
   description: string;
+  responsibilities: string[];
+  mustHaveSkills: string[];
+  industryType: string;
+  department: string;
+  employmentType: string;
+  roleCategory: string;
+  education: string;
   tags: string[];
   applicationType: 'link' | 'form';
   applyLink?: string;

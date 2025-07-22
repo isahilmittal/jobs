@@ -32,10 +32,18 @@ import { useToast } from "@/hooks/use-toast";
 import { Loader2, Sparkles, Wand2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { ScrollArea } from "./ui/scroll-area";
 
 const jobFormSchema = z.object({
   title: z.string().min(1, "Title is required."),
   description: z.string().min(1, "Description is required."),
+  responsibilities: z.string().min(1, "Please list at least one responsibility."),
+  mustHaveSkills: z.string().min(1, "Please list at least one skill."),
+  industryType: z.string().min(1, "Industry is required."),
+  department: z.string().min(1, "Department is required."),
+  employmentType: z.string().min(1, "Employment type is required."),
+  roleCategory: z.string().min(1, "Role category is required."),
+  education: z.string().min(1, "Education is required."),
   tags: z.array(z.string()).min(1, "At least one tag is required."),
   applicationType: z.enum(['link', 'form']),
   applyLink: z.string().optional(),
@@ -68,6 +76,13 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
     defaultValues: {
       title: "",
       description: "",
+      responsibilities: "",
+      mustHaveSkills: "",
+      industryType: "",
+      department: "",
+      employmentType: "",
+      roleCategory: "",
+      education: "",
       tags: [],
       applicationType: 'link',
       applyLink: "",
@@ -82,6 +97,13 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
             form.reset({
                 title: jobToEdit.title,
                 description: jobToEdit.description,
+                responsibilities: jobToEdit.responsibilities.join('\n'),
+                mustHaveSkills: jobToEdit.mustHaveSkills.join(', '),
+                industryType: jobToEdit.industryType,
+                department: jobToEdit.department,
+                employmentType: jobToEdit.employmentType,
+                roleCategory: jobToEdit.roleCategory,
+                education: jobToEdit.education,
                 tags: jobToEdit.tags,
                 applicationType: jobToEdit.applicationType,
                 applyLink: jobToEdit.applicationType === 'link' ? jobToEdit.applyLink : "",
@@ -90,6 +112,13 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
             form.reset({
                 title: "",
                 description: "",
+                responsibilities: "",
+                mustHaveSkills: "",
+                industryType: "",
+                department: "",
+                employmentType: "",
+                roleCategory: "",
+                education: "",
                 tags: [],
                 applicationType: 'link',
                 applyLink: "",
@@ -101,6 +130,8 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
   const handleFormSubmit = (data: JobFormValues) => {
     const finalData = {
       ...data,
+      responsibilities: data.responsibilities.split('\n').filter(r => r.trim() !== ''),
+      mustHaveSkills: data.mustHaveSkills.split(',').map(s => s.trim()).filter(s => s !== ''),
       applyLink: data.applicationType === 'link' ? data.applyLink : undefined,
     }
     onSubmit(finalData);
@@ -188,11 +219,11 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
   return (
     <Dialog open={isOpen} onOpenChange={(open) => {
         if (!open) {
-            form.reset({ title: "", description: "", tags: [], applicationType: 'link', applyLink: "" });
+            form.reset();
         }
         onOpenChange(open);
     }}>
-      <DialogContent className="sm:max-w-[625px]">
+      <DialogContent className="sm:max-w-[800px]">
         <DialogHeader>
           <DialogTitle>{jobToEdit ? 'Edit Job' : 'Add New Job'}</DialogTitle>
           <DialogDescription>
@@ -200,7 +231,9 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-4">
+          <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+            <ScrollArea className="h-[60vh] pr-6">
+            <div className="space-y-4">
             <FormField
               control={form.control}
               name="title"
@@ -214,45 +247,71 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
                 </FormItem>
               )}
             />
+             <div className="flex justify-end items-center mb-2">
+                <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isGenerating}>
+                    {isGenerating ? ( <Loader2 className="mr-2 h-4 w-4 animate-spin" /> ) : ( <Wand2 className="mr-2 h-4 w-4 text-primary" /> )}
+                    Suggest
+                </Button>
+            </div>
             <FormField
               control={form.control}
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <div className="flex justify-between items-center mb-2">
-                    <FormLabel>Job Description</FormLabel>
-                    <div className="flex gap-2">
-                        <Button type="button" variant="outline" size="sm" onClick={handleSuggestDescription} disabled={isGenerating}>
-                            {isGenerating ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Wand2 className="mr-2 h-4 w-4 text-primary" />
-                            )}
-                            Suggest
-                        </Button>
-                        <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isGenerating}>
-                            {isGenerating ? (
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                                <Sparkles className="mr-2 h-4 w-4 text-primary" />
-                            )}
-                            Generate Tags
-                        </Button>
-                    </div>
-                  </div>
+                  <FormLabel>Job Description</FormLabel>
                   <FormControl>
-                    <Textarea rows={8} placeholder="Describe the role, responsibilities, and requirements..." {...field} />
+                    <Textarea rows={5} placeholder="Provide a general overview of the job." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="responsibilities"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Job Responsibilities</FormLabel>
+                  <FormControl>
+                    <Textarea rows={5} placeholder="List responsibilities, one per line." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="mustHaveSkills"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Must-Have Skills</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Enter skills separated by commas, e.g., Skill 1, Skill 2" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                 <FormField control={form.control} name="industryType" render={({ field }) => (<FormItem><FormLabel>Industry Type</FormLabel><FormControl><Input placeholder="e.g. Education / Training" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                 <FormField control={form.control} name="department" render={({ field }) => (<FormItem><FormLabel>Department</FormLabel><FormControl><Input placeholder="e.g. Teaching & Training" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                 <FormField control={form.control} name="employmentType" render={({ field }) => (<FormItem><FormLabel>Employment Type</FormLabel><FormControl><Input placeholder="e.g. Full Time, Permanent" {...field} /></FormControl><FormMessage /></FormItem>)} />
+                 <FormField control={form.control} name="roleCategory" render={({ field }) => (<FormItem><FormLabel>Role Category</FormLabel><FormControl><Input placeholder="e.g. Administration & Staff" {...field} /></FormControl><FormMessage /></FormItem>)} />
+            </div>
+             <FormField control={form.control} name="education" render={({ field }) => (<FormItem><FormLabel>Education</FormLabel><FormControl><Input placeholder="e.g. UG: Any Graduate" {...field} /></FormControl><FormMessage /></FormItem>)} />
+
              <FormField
               control={form.control}
               name="tags"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tags</FormLabel>
+                    <div className="flex justify-between items-center mb-2">
+                        <FormLabel>Tags</FormLabel>
+                        <Button type="button" variant="outline" size="sm" onClick={handleGenerateTags} disabled={isGenerating}>
+                            {isGenerating ? (<Loader2 className="mr-2 h-4 w-4 animate-spin" />) : (<Sparkles className="mr-2 h-4 w-4 text-primary" />)}
+                            Generate Tags
+                        </Button>
+                    </div>
                   <FormControl>
                     <div className="space-y-2">
                       <Input
@@ -326,7 +385,9 @@ export function JobForm({ isOpen, onOpenChange, onSubmit, jobToEdit }: JobFormPr
                 )}
               />
             )}
-            <DialogFooter>
+            </div>
+            </ScrollArea>
+            <DialogFooter className="pt-4">
               <DialogClose asChild>
                 <Button type="button" variant="outline">Cancel</Button>
               </DialogClose>
