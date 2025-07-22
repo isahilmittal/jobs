@@ -200,8 +200,13 @@ export default function Home() {
                     </Button>
                 </form>
             </div>
-            <div className="mt-8 text-center text-muted-foreground text-sm">
+            <div className="mt-8 pt-8 border-t flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
                 <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
+                <div className="flex items-center gap-4 mt-4 sm:mt-0">
+                    <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
+                    <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>
+                    <Link href="/login" className="transition-colors hover:text-foreground">Admin Login</Link>
+                </div>
             </div>
           </div>
         </footer>

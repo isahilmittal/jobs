@@ -80,8 +80,15 @@ export default function AboutPage() {
       </main>
 
       <footer className="bg-card border-t">
-          <div className="container mx-auto px-4 py-8 text-center text-muted-foreground text-sm">
-             <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
+                <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
+                <div className="flex items-center gap-4 mt-4 sm:mt-0">
+                    <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
+                    <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>
+                    <Link href="/login" className="transition-colors hover:text-foreground">Admin Login</Link>
+                </div>
+            </div>
           </div>
       </footer>
     </div>
