@@ -44,19 +44,14 @@ export default function LoginPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // This effect checks if the user is ALREADY logged in when they visit the page.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        // If user is found, redirect to admin immediately.
         router.replace('/admin'); 
       } else {
-        // Otherwise, stop checking and show the login form.
         setIsCheckingAuth(false);
       }
     });
-
-    // Cleanup the subscription on component unmount
     return () => unsubscribe();
   }, [router]);
 
@@ -77,8 +72,8 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
-      // A successful login will trigger the onAuthStateChanged listener above,
-      // which will then handle the redirect. We can also push here as a fallback.
+      // This push is now the primary redirect mechanism after a manual login.
+      // The onAuthStateChanged listener handles redirects for already-logged-in users.
       router.push('/admin');
     } else {
       toast({
@@ -90,7 +85,6 @@ export default function LoginPage() {
     }
   };
 
-  // While checking auth, show a global loader
   if (isCheckingAuth) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
@@ -99,7 +93,6 @@ export default function LoginPage() {
     );
   }
 
-  // Render the full login page form
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="absolute inset-0 bg-primary/10 blur-3xl -z-10"></div>

@@ -27,10 +27,10 @@ export default function CareersPage() {
     async function fetchData() {
       setIsLoading(true);
       
-      let fetchedJobs = await getJobs();
+      let fetchedJobs = await getJobs(true); // Fetch all jobs, including expired ones
       if (fetchedJobs.length === 0) {
         await addInitialJobs();
-        fetchedJobs = await getJobs();
+        fetchedJobs = await getJobs(true); // Re-fetch after seeding
       }
       setJobs(fetchedJobs);
 
