@@ -13,6 +13,7 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
 import { useState } from 'react';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const contactFormSchema = z.object({
   name: z.string().min(2, "Name must be at least 2 characters."),
@@ -58,13 +59,16 @@ export default function ContactPage() {
             <BarChart className="h-7 w-7 text-primary" />
             <h1 className="text-xl font-bold text-foreground">Analyzed.in</h1>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
-            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
-            <Link href="/contact" className="font-bold text-foreground">Contact</Link>
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
+                <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+                <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+                <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+                <Link href="/contact" className="font-bold text-foreground">Contact</Link>
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 

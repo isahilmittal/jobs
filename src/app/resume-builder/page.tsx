@@ -15,6 +15,7 @@ import { parseResumeFromFile, ParseResumeOutput } from '@/ai/flows/parse-resume-
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 type Experience = {
   id: number;
@@ -334,13 +335,16 @@ export default function ResumeBuilderPage() {
             <BarChart className="h-7 w-7 text-primary" />
             <h1 className="text-xl font-bold text-foreground">Analyzed.in</h1>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
-            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
-            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
+                <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+                <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+                <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+                <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
       

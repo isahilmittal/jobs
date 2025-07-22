@@ -10,6 +10,7 @@ import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import Lottie from 'lottie-react';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 
 const marketingLottieUrl = "https://assets7.lottiefiles.com/packages/lf20_t87p9b6w.json";
@@ -81,9 +82,12 @@ export default function AgencyHomePage() {
             <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
             <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
-          <Button asChild>
-            <Link href="/contact">Get a Quote <ArrowRight className="ml-2 h-4 w-4" /></Link>
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button asChild>
+                <Link href="/contact">Get a Quote <ArrowRight className="ml-2 h-4 w-4" /></Link>
+            </Button>
+          </div>
         </div>
       </header>
 

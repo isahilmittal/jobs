@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { BarChart, Search, PenTool, Lightbulb, TrendingUp, Users, CheckCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { ThemeToggle } from '@/components/theme-toggle';
 
 const services = [
   {
@@ -40,13 +41,16 @@ export default function ServicesPage() {
             <BarChart className="h-7 w-7 text-primary" />
             <h1 className="text-xl font-bold text-foreground">Analyzed.in</h1>
           </Link>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-             <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/services" className="font-bold text-foreground">Services</Link>
-            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
-            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
-          </nav>
+          <div className="flex items-center gap-2">
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
+                <Link href="/services" className="font-bold text-foreground">Services</Link>
+                <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+                <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+                <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
+            </nav>
+            <ThemeToggle />
+          </div>
         </div>
       </header>
 
