@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Search, Tag, X, Star, Loader2, Mail, BarChart } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
 import { getJobs, addInitialJobs } from "@/lib/jobs";
 import { addSubscriber } from "@/lib/subscribers";
 import { useToast } from "@/hooks/use-toast";
@@ -19,7 +18,6 @@ export default function CareersPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [isSubscribing, startSubscribeTransition] = useTransition();
   const [email, setEmail] = useState("");
   const { toast } = useToast();
@@ -27,9 +25,6 @@ export default function CareersPage() {
   useEffect(() => {
     async function fetchData() {
       setIsLoading(true);
-      
-      const user = await getCurrentUser();
-      setIsLoggedIn(!!user);
       
       let fetchedJobs = await getJobs();
       if (fetchedJobs.length === 0) {
@@ -99,11 +94,6 @@ export default function CareersPage() {
                 <Link href="/careers" className="font-bold text-foreground">Careers</Link>
                 <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
             </nav>
-            {isLoggedIn && (
-                <Button asChild variant="default" size="sm">
-                    <Link href="/admin">Admin Dashboard</Link>
-                </Button>
-            )}
           </div>
         </header>
 
