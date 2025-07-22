@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { ArrowRight, BarChart, Search, PenTool, Lightbulb, TrendingUp, Users, Check, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardContent, CardFooter, CardTitle } from '@/components/ui/card';
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import Lottie from 'lottie-react';
 import { Badge } from '@/components/ui/badge';

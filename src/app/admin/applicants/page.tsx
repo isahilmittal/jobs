@@ -29,13 +29,13 @@ import withAuth from "@/components/with-auth";
 import { getCurrentUserWithRole, logout } from "@/lib/auth";
 import { useRouter } from "next/navigation";
 import { getEnrichedApplicants } from "@/lib/applicants";
-import type { User as FirebaseUser } from "firebase/auth";
+import type { User as AuthUser } from "@/lib/types";
 import type { UserRole } from "@/lib/auth";
 
 function ApplicantsPage() {
   const [applicants, setApplicants] = useState<EnrichedApplicant[]>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [currentUser, setCurrentUser] = useState<{ user: FirebaseUser; role: UserRole } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ user: AuthUser; role: UserRole } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();

@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { type User } from "firebase/auth";
+import type { User } from "@/lib/types";
 
 import {
   ColumnDef,
@@ -73,7 +73,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
+import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser } from "@/lib/auth";
 
 type AdminStaff = Omit<AdminUser, 'password'>;
 
@@ -107,7 +107,6 @@ function AdminPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
-        await ensureSuperAdminExists();
         const userWithRole = await getCurrentUserWithRole();
         
         if (!userWithRole) {
@@ -147,14 +146,14 @@ function AdminPage() {
   };
 
   const handleAddJob = async (data: Omit<Job, 'id' | 'createdAt' | 'createdBy'>) => {
-    if (!currentUser) {
+    if (!currentUser?.user.email) {
       toast({variant: "destructive", title: "Error", description: "You must be logged in to create a job."});
       router.push('/login');
       return;
     }
     await addJob({
       ...data,
-      createdBy: currentUser.user.email!,
+      createdBy: currentUser.user.email,
     });
     toast({title: "Success", description: "Job posted successfully."});
     fetchData();
@@ -290,7 +289,7 @@ function AdminPage() {
             <AlertDialog>
                 <AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button></AlertDialogTrigger>
                 <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>Delete Admin?</AlertDialogTitle><AlertDialogDescription>This will remove their access role. This action cannot be undone. You will also need to delete them from Firebase Authentication.</AlertDialogDescription></AlertDialogHeader>
+                <AlertDialogHeader><AlertDialogTitle>Delete Admin?</AlertDialogTitle><AlertDialogDescription>This will remove their admin access from the application.</AlertDialogDescription></AlertDialogHeader>
                 <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteAdmin(user.uid)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Yes, delete admin</AlertDialogAction></AlertDialogFooter>
                 </AlertDialogContent>
             </AlertDialog>
@@ -365,7 +364,7 @@ function AdminPage() {
                         <Users className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{currentUser?.role === 'SUPER_ADMIN' ? adminStaff.length + 1 : 1}</div>
+                        <div className="text-2xl font-bold">{adminStaff.length}</div>
                         <p className="text-xs text-muted-foreground">Users with admin access</p>
                     </CardContent>
                 </Card>
@@ -403,7 +402,7 @@ function AdminPage() {
                           </CardContent>
                       </Card>
                        <Card>
-                          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" />Add New Admin</CardTitle><CardDescription>Create a new administrator account in Firebase Authentication and assign them an admin role.</CardDescription></CardHeader>
+                          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" />Add New Admin</CardTitle><CardDescription>Create a new administrator account.</CardDescription></CardHeader>
                           <CardContent>
                             <Form {...addAdminForm}>
                                 <form onSubmit={addAdminForm.handleSubmit(handleAddAdmin)} className="space-y-4">
@@ -446,5 +445,3 @@ function AdminPage() {
 }
 
 export default withAuth(AdminPage);
-
-    

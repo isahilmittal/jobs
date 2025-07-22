@@ -36,3 +36,9 @@ export type Subscriber = {
     email: string;
     subscribedAt: Date;
 };
+
+export type User = {
+    uid: string;
+    email: string;
+    password?: string; // Only used for mock auth
+};
