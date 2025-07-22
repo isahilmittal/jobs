@@ -1,4 +1,6 @@
 
+import type { User as FirebaseUser } from 'firebase/auth';
+
 export type Job = {
   id: string;
   title: string;
@@ -37,8 +39,9 @@ export type Subscriber = {
     subscribedAt: Date;
 };
 
+// This is our internal User type, which might have more properties than Firebase's
 export type User = {
     uid: string;
-    email: string;
-    password?: string; // Only used for mock auth
+    email: string | null;
+    password?: string; // Only used for mock auth, should not be stored
 };

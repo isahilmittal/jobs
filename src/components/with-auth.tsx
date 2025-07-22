@@ -5,13 +5,13 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { getCurrentUser } from '@/lib/auth';
 import { Loader2 } from 'lucide-react';
-import type { User } from '@/lib/types';
+import type { User as FirebaseUser } from 'firebase/auth';
 
 const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   const AuthComponent = (props: P) => {
     const router = useRouter();
     const [isLoading, setIsLoading] = useState(true);
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<FirebaseUser | null>(null);
 
     useEffect(() => {
       const checkAuth = async () => {

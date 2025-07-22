@@ -7,7 +7,7 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import type { User } from "@/lib/types";
+import type { User as FirebaseUser } from 'firebase/auth';
 
 import {
   ColumnDef,
@@ -74,7 +74,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser } from "@/lib/auth";
+import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
 
 type AdminStaff = Omit<AdminUser, 'password'>;
 
@@ -90,7 +90,7 @@ function AdminPage() {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [jobToEdit, setJobToEdit] = useState<Job | null>(null);
   const [sorting, setSorting] = useState<SortingState>([]);
-  const [currentUser, setCurrentUser] = useState<{ user: User; role: UserRole } | null>(null);
+  const [currentUser, setCurrentUser] = useState<{ user: FirebaseUser; role: UserRole } | null>(null);
   const [adminStaff, setAdminStaff] = useState<AdminStaff[]>([]);
   const [isAddingUser, setIsAddingUser] = useState(false);
   const [applicantCount, setApplicantCount] = useState(0);
@@ -108,6 +108,7 @@ function AdminPage() {
   const fetchData = useCallback(async () => {
     setIsLoading(true);
     try {
+        await ensureSuperAdminExists();
         const userWithRole = await getCurrentUserWithRole();
         
         if (!userWithRole) {
@@ -116,19 +117,25 @@ function AdminPage() {
         }
         setCurrentUser(userWithRole);
         
+        const promises: any[] = [
+            getJobs(true), 
+            getApplicants(), 
+            getSubscriberCount()
+        ];
+        
         if (userWithRole.role === 'SUPER_ADMIN') {
-            setAdminStaff(await getAllAdminUsers());
+            promises.push(getAllAdminUsers());
         }
 
-        const [fetchedJobs, fetchedApplicants, fetchedSubscribers] = await Promise.all([
-            getJobs(true), // Fetch all jobs for the admin view
-            getApplicants(), // Fetch raw applicants, not enriched
-            getSubscriberCount(),
-        ]);
+        const [fetchedJobs, fetchedApplicants, fetchedSubscribers, fetchedAdminStaff] = await Promise.all(promises);
 
         setJobs(fetchedJobs);
         setApplicantCount(fetchedApplicants.length);
         setSubscriberCount(fetchedSubscribers);
+        if(fetchedAdminStaff) {
+          setAdminStaff(fetchedAdminStaff);
+        }
+
     } catch (error) {
         console.error("Failed to fetch admin data:", error);
         toast({variant: "destructive", title: "Error", description: "Could not load dashboard data."})
