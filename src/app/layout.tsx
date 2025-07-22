@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Job Board Bonanza',
-  description: 'Find your next dream job!',
+  title: 'analyzed.in | Find Your Next Opportunity',
+  description: 'analyzed.in: The premier job board for top talent in the tech industry.',
 };
 
 export default function RootLayout({

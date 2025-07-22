@@ -126,7 +126,7 @@ export default function JobApplicationPage() {
             </Button>
             <Link href="/" className="flex items-center gap-2">
                 <Briefcase className="h-6 w-6 text-primary" />
-                <h1 className="text-lg font-bold text-foreground hidden sm:block">Job Board Bonanza</h1>
+                <h1 className="text-lg font-bold text-foreground hidden sm:block">analyzed.in</h1>
             </Link>
         </div>
       </header>

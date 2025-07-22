@@ -8,7 +8,7 @@ import { JobCard } from "@/components/job-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Search, Tag, X, Briefcase, Star, LogIn, Loader2, Mail } from "lucide-react";
+import { Search, Tag, X, Briefcase, Star, LogIn, Loader2, Mail, Users, Info } from "lucide-react";
 import { getCurrentUser } from "@/lib/auth";
 import { getJobs, addInitialJobs } from "@/lib/jobs";
 import { addSubscriber } from "@/lib/subscribers";
@@ -89,8 +89,16 @@ export default function Home() {
           <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <Link href="/" className="flex items-center gap-2">
               <Briefcase className="h-7 w-7 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">Job Board Bonanza</h1>
+              <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
             </Link>
+             <nav className="hidden md:flex items-center gap-4 text-sm font-medium">
+                <Link href="/about" className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
+                    <Info className="h-4 w-4" /> About Us
+                </Link>
+                <Link href="/team" className="flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground">
+                    <Users className="h-4 w-4" /> Our Team
+                </Link>
+             </nav>
             {isLoggedIn ? (
                 <Button asChild variant="default" size="sm">
                     <Link href="/admin">Admin Dashboard</Link>
@@ -193,7 +201,7 @@ export default function Home() {
                 </form>
             </div>
             <div className="mt-8 text-center text-muted-foreground text-sm">
-                <p>&copy; {new Date().getFullYear()} Job Board Bonanza. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
             </div>
           </div>
         </footer>
