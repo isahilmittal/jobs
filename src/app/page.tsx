@@ -91,6 +91,11 @@ export default function Home() {
               <Briefcase className="h-7 w-7 text-primary" />
               <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
             </Link>
+            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+                <Link href="/" className="font-bold text-foreground">Home</Link>
+                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
+                <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
+            </nav>
             {isLoggedIn && (
                 <Button asChild variant="default" size="sm">
                     <Link href="/admin">Admin Dashboard</Link>

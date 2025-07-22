@@ -27,8 +27,8 @@ export default function TeamPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About Us</Link>
-            <Link href="/team" className="font-bold text-foreground">Our Team</Link>
+            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
+            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
           </nav>
         </div>
       </header>
