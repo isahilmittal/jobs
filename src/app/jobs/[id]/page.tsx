@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 import { Job } from '@/lib/types';
 import { getJob, getJobs } from '@/lib/jobs';
-import { addApplicant } from '@/lib/lib/applicants';
+import { addApplicant } from '@/lib/applicants';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -253,3 +253,5 @@ export default function JobApplicationPage() {
     </>
   );
 }
+
+    
