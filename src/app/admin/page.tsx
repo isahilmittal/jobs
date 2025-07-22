@@ -401,5 +401,3 @@ function AdminPage() {
 }
 
 export default withAuth(AdminPage);
-
-    

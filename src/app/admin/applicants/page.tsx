@@ -48,7 +48,7 @@ function ApplicantsPage() {
             router.push('/login');
             return;
         }
-        setCurrentUser(user);
+        setCurrentUser(user as { user: AuthUser; role: UserRole });
         
         // This function now fetches both jobs and applicants efficiently.
         const fetchedApplicants = await getEnrichedApplicants();

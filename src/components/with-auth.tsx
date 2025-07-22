@@ -11,28 +11,25 @@ import type { User as FirebaseUser } from 'firebase/auth';
 const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) => {
   const AuthComponent = (props: P) => {
     const router = useRouter();
-    const [user, setUser] = useState<FirebaseUser | null>(null);
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-      // onAuthStateChanged returns an unsubscribe function
+      // onAuthStateChanged returns an unsubscribe function that we can call on cleanup
       const unsubscribe = onAuthStateChanged(auth, (user) => {
-        if (user) {
-          // User is signed in
-          setUser(user);
-        } else {
-          // User is signed out
-          setUser(null);
+        if (!user) {
+          // If the user is not logged in, redirect to the login page.
           router.push('/login');
+        } else {
+          // If the user is logged in, we are no longer loading.
+          setIsLoading(false);
         }
-        // We have a response from Firebase, so we're no longer loading
-        setIsLoading(false);
       });
 
       // Cleanup subscription on unmount
       return () => unsubscribe();
     }, [router]);
 
+    // While we are verifying the user's authentication state, show a loader.
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-screen bg-background">
@@ -40,13 +37,8 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
         </div>
       );
     }
-    
-    // If there's no user, we've already initiated a redirect, so we can return null 
-    // or a loader to prevent rendering the wrapped component briefly.
-    if (!user) {
-        return null;
-    }
 
+    // If we are no longer loading and a user exists, render the wrapped component.
     return <WrappedComponent {...props} />;
   };
 

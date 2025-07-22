@@ -97,23 +97,16 @@ export async function logout(): Promise<void> {
 };
 
 export async function getCurrentUserWithRole(): Promise<{user: FirebaseUser; role: UserRole} | null> {
-    return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, async (user) => {
-            unsubscribe();
-            if (user) {
-                const userDocRef = doc(db, 'users', user.uid);
-                const docSnap = await getDoc(userDocRef);
+    const user = auth.currentUser;
+    if (!user) return null;
 
-                if (docSnap.exists()) {
-                    resolve({ user, role: (docSnap.data() as {role: UserRole}).role });
-                } else {
-                    resolve(null);
-                }
-            } else {
-                resolve(null);
-            }
-        });
-    });
+    const userDocRef = doc(db, 'users', user.uid);
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+        return { user, role: (docSnap.data() as {role: UserRole}).role };
+    }
+    return null;
 };
 
 export async function getAllAdminUsers(): Promise<AdminUser[]> {
