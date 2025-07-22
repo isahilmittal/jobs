@@ -41,10 +41,10 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
 
-  // This effect will check if the user is ALREADY logged in when they visit the page.
+  // This effect checks if the user is ALREADY logged in when they visit the page.
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -69,7 +69,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormValues) => {
-    setIsLoading(true);
+    setIsSubmitting(true);
     const result = await login(data.email, data.password);
     
     if (result.success) {
@@ -77,8 +77,8 @@ export default function LoginPage() {
         title: "Login Successful",
         description: "Redirecting to your dashboard...",
       });
-      // The onAuthStateChanged listener above will now handle the redirect reliably.
-      // But we can also push here as a fallback.
+      // A successful login will trigger the onAuthStateChanged listener above,
+      // which will then handle the redirect. We can also push here as a fallback.
       router.push('/admin');
     } else {
       toast({
@@ -86,11 +86,11 @@ export default function LoginPage() {
         title: "Login Failed",
         description: result.message,
       });
-      setIsLoading(false);
+      setIsSubmitting(false);
     }
   };
 
-  // While checking auth, show a loader
+  // While checking auth, show a global loader
   if (isCheckingAuth) {
     return (
       <div className="flex justify-center items-center h-screen bg-background">
@@ -99,7 +99,7 @@ export default function LoginPage() {
     );
   }
 
-  // Render login form
+  // Render the full login page form
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-background p-4">
         <div className="absolute inset-0 bg-primary/10 blur-3xl -z-10"></div>
@@ -122,7 +122,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input type="email" placeholder="admin@example.com" {...field} disabled={isLoading} />
+                      <Input type="email" placeholder="admin@example.com" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -135,14 +135,14 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Password</FormLabel>
                     <FormControl>
-                      <Input type="password" placeholder="••••••••" {...field} disabled={isLoading} />
+                      <Input type="password" placeholder="••••••••" {...field} disabled={isSubmitting} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+              <Button type="submit" className="w-full" disabled={isSubmitting}>
+                {isSubmitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 Sign In
               </Button>
             </form>

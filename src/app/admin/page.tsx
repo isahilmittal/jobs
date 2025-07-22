@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -27,14 +27,6 @@ import { getSubscriberCount } from "@/lib/subscribers";
 import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
 import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
   Table,
   TableBody,
   TableCell,
@@ -59,7 +51,6 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-  AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import {
   Card,
@@ -71,7 +62,7 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail, Info } from "lucide-react";
+import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, Users, Loader2, FileText, ArrowRight, Mail, Info } from "lucide-react";
 import withAuth from "@/components/with-auth";
 import { logout, getCurrentUserWithRole, getAllAdminUsers, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
 

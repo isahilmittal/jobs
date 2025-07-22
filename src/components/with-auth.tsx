@@ -14,18 +14,23 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
+      // onAuthStateChanged is the best way to listen for changes in auth state.
       const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
         if (currentUser) {
+          // User is signed in.
           setUser(currentUser);
         } else {
-          router.push('/login');
+          // User is signed out.
+          router.replace('/login'); // Use replace to avoid back-button issues
         }
         setIsLoading(false);
       });
 
+      // Cleanup subscription on unmount
       return () => unsubscribe();
     }, [router]);
 
+    // While we are checking for the user's auth state, show a loader.
     if (isLoading) {
       return (
         <div className="flex justify-center items-center h-screen bg-background">
@@ -34,10 +39,13 @@ const withAuth = <P extends object>(WrappedComponent: React.ComponentType<P>) =>
       );
     }
 
+    // If there is no user, it means the redirect is happening or has happened.
+    // Returning null prevents the wrapped component from rendering briefly.
     if (!user) {
       return null; 
     }
 
+    // If we have a user, render the protected component.
     return <WrappedComponent {...props} />;
   };
 
