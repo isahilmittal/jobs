@@ -19,14 +19,14 @@ const ExperienceSchema = z.object({
   description: z.string(),
 });
 
-export const EnhanceResumeInputSchema = z.object({
+const EnhanceResumeInputSchema = z.object({
   summary: z.string().describe("The user's current professional summary."),
   experience: z.array(ExperienceSchema).describe("The user's work experience."),
   skills: z.string().describe("The user's current list of skills."),
 });
 export type EnhanceResumeInput = z.infer<typeof EnhanceResumeInputSchema>;
 
-export const EnhanceResumeOutputSchema = z.object({
+const EnhanceResumeOutputSchema = z.object({
   enhancedSummary: z
     .string()
     .describe('An improved, ATS-friendly version of the professional summary.'),
