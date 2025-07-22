@@ -3,15 +3,64 @@
 
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { ArrowRight, BarChart, Search, PenTool, Lightbulb, TrendingUp, Users } from 'lucide-react';
+import { ArrowRight, BarChart, Search, PenTool, Lightbulb, TrendingUp, Users, Check, ExternalLink } from 'lucide-react';
 import Image from 'next/image';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { ParallaxProvider, Parallax } from 'react-scroll-parallax';
 import Lottie from 'lottie-react';
+import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 
 const marketingLottieUrl = "https://assets7.lottiefiles.com/packages/lf20_t87p9b6w.json";
 const webDevLottieUrl = "https://assets1.lottiefiles.com/packages/lf20_caugh3q3.json";
 const aiSolutionsLottieUrl = "https://assets10.lottiefiles.com/packages/lf20_bwnh5sre.json";
+
+const portfolio = [
+    {
+        title: 'Hook Adhesives Website',
+        description: 'Redesigned the website and implemented SEO strategies for hookadhesives.com, resulting in a 120% increase in lead generation.',
+        tags: ['Web Design', 'SEO'],
+        imageUrl: 'https://placehold.co/600x400.png',
+        imageHint: 'adhesive product website',
+        link: '#',
+    },
+    {
+        title: 'Zanko.in Website',
+        description: 'Developed and optimized the website for zanko.in, improving user experience and increasing conversion rates by 85%.',
+        tags: ['Web Design', 'SEO', 'UX/UI'],
+        imageUrl: 'https://placehold.co/600x400.png',
+        imageHint: 'ecommerce website',
+        link: '#',
+    },
+    {
+        title: 'Swabhiman Ki Awaj',
+        description: 'Created a responsive website for Swabhiman Ki Awaj organization, focusing on accessibility and user engagement while supporting their social mission.',
+        tags: ['Web Design', 'SEO', 'Non-Profit'],
+        imageUrl: 'https://placehold.co/600x400.png',
+        imageHint: 'organization website',
+        link: '#',
+    },
+];
+
+const team = [
+    {
+        name: 'Sahil Mittal',
+        role: 'Developer / Head',
+        description: 'Leads our development team and oversees all technical aspects of our client projects.',
+        avatar: 'SM',
+        image: 'https://placehold.co/100x100.png',
+        imageHint: 'male developer portrait'
+    },
+    {
+        name: 'Nitiesh Singh',
+        role: 'UI/UX / Content',
+        description: 'Creates engaging user experiences and develops compelling content for our clients.',
+        avatar: 'NS',
+        image: 'https://placehold.co/100x100.png',
+        imageHint: 'male designer portrait'
+    }
+];
 
 
 export default function AgencyHomePage() {
@@ -103,56 +152,59 @@ export default function AgencyHomePage() {
               <h3 className="text-3xl md:text-4xl font-bold text-foreground">Our Work</h3>
                <p className="text-md text-muted-foreground mt-3 max-w-xl mx-auto">We're proud of the solutions we've delivered.</p>
             </div>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <div className="group relative overflow-hidden rounded-lg">
-                <Image src="https://placehold.co/600x400.png" alt="Project 1" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="website screenshot" />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                  <h4 className="text-white text-lg font-bold">E-Commerce Platform</h4>
-                </div>
-              </div>
-              <div className="group relative overflow-hidden rounded-lg">
-                <Image src="https://placehold.co/600x400.png" alt="Project 2" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="marketing dashboard" />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <h4 className="text-white text-lg font-bold">SaaS Analytics Dashboard</h4>
-                </div>
-              </div>
-              <div className="group relative overflow-hidden rounded-lg">
-                <Image src="https://placehold.co/600x400.png" alt="Project 3" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="mobile app" />
-                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                   <h4 className="text-white text-lg font-bold">Mobile App for Startups</h4>
-                </div>
-              </div>
+            <div className="grid md:grid-cols-1 lg:grid-cols-3 gap-8">
+                {portfolio.map((item, index) => (
+                    <Card key={index} className="flex flex-col overflow-hidden bg-card/50 transition-shadow hover:shadow-xl">
+                        <CardHeader className="p-0">
+                             <Image src={item.imageUrl} alt={item.title} width={600} height={400} className="w-full" data-ai-hint={item.imageHint} />
+                        </CardHeader>
+                        <CardContent className="p-6 flex-grow">
+                            <h4 className="text-xl font-bold mb-2">{item.title}</h4>
+                            <p className="text-muted-foreground mb-4">{item.description}</p>
+                             <div className="flex flex-wrap gap-2">
+                                {item.tags.map(tag => (
+                                    <Badge key={tag} variant="secondary">{tag}</Badge>
+                                ))}
+                            </div>
+                        </CardContent>
+                        <CardFooter className="p-6 pt-0">
+                            <Button asChild variant="outline">
+                                <a href={item.link} target="_blank" rel="noopener noreferrer">Visit Website <ExternalLink className="ml-2 h-4 w-4" /></a>
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ))}
             </div>
           </div>
         </section>
 
-        {/* Testimonials */}
+        {/* Team Section */}
         <section className="py-20 bg-card/50">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-12">
-                    <h3 className="text-3xl md:text-4xl font-bold text-foreground">What Our Clients Say</h3>
+                    <h3 className="text-3xl md:text-4xl font-bold text-foreground">Meet Our Team</h3>
                 </div>
                 <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-                    <Card className="p-6 bg-card">
-                        <p className="text-muted-foreground mb-4">"Analyzed.in transformed our online presence. Their data-driven approach to SEO doubled our organic traffic in just six months. A truly professional and effective team."</p>
-                        <div className="flex items-center gap-4">
-                            <Image src="https://placehold.co/100x100.png" alt="Client 1" width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
+                   {team.map((member, index) => (
+                     <Card key={index} className="p-6 bg-card">
+                        <div className="flex items-start gap-4">
+                            <Avatar className="w-16 h-16 border-2 border-primary">
+                                <AvatarImage src={member.image} alt={`Portrait of ${member.name}`} data-ai-hint={member.imageHint} />
+                                <AvatarFallback>{member.avatar}</AvatarFallback>
+                            </Avatar>
                             <div>
-                                <p className="font-semibold">Jane Doe</p>
-                                <p className="text-sm text-muted-foreground">CEO, TechForward Inc.</p>
+                                <h4 className="text-lg font-semibold">{member.name}</h4>
+                                <p className="text-sm text-primary font-medium mb-2">{member.role}</p>
+                                <p className="text-muted-foreground text-sm">{member.description}</p>
                             </div>
                         </div>
                     </Card>
-                    <Card className="p-6 bg-card">
-                        <p className="text-muted-foreground mb-4">"The website Analyzed.in built for us is not only beautiful but also incredibly fast and user-friendly. Our conversion rates have seen a significant boost since the launch."</p>
-                        <div className="flex items-center gap-4">
-                            <Image src="https://placehold.co/100x100.png" alt="Client 2" width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
-                            <div>
-                                <p className="font-semibold">John Smith</p>
-                                <p className="text-sm text-muted-foreground">Marketing Director, Innovate Co.</p>
-                            </div>
-                        </div>
-                    </Card>
+                   ))}
+                </div>
+                 <div className="text-center mt-12">
+                    <Button asChild size="lg" variant="outline">
+                        <Link href="/team">More About Us</Link>
+                    </Button>
                 </div>
             </div>
         </section>

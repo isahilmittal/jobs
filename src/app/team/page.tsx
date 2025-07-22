@@ -1,19 +1,28 @@
 
 import Link from 'next/link';
-import { BarChart } from 'lucide-react';
+import { BarChart, Linkedin, Twitter } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import Image from 'next/image';
 
 
 const teamMembers = [
-  { name: 'Alex Johnson', role: 'CEO & Founder', avatar: 'AJ', image: 'https://placehold.co/300x300.png', hint: 'ceo portrait' },
-  { name: 'Maria Garcia', role: 'Chief Technology Officer', avatar: 'MG', image: 'https://placehold.co/300x300.png', hint: 'engineer portrait' },
-  { name: 'James Smith', role: 'Head of Product', avatar: 'JS', image: 'https://placehold.co/300x300.png', hint: 'manager portrait' },
-  { name: 'Linda Kim', role: 'Lead UX Designer', avatar: 'LK', image: 'https://placehold.co/300x300.png', hint: 'designer portrait' },
-  { name: 'Robert Brown', role: 'Senior Marketing Manager', avatar: 'RB', image: 'https://placehold.co/300x300.png', hint: 'marketer portrait' },
-  { name: 'Patricia Miller', role: 'Head of Talent Acquisition', avatar: 'PM', image: 'https://placehold.co/300x300.png', hint: 'recruiter portrait' },
+  { 
+      name: 'Sahil Mittal', 
+      role: 'Developer / Head', 
+      avatar: 'SM', 
+      image: 'https://placehold.co/300x300.png', 
+      hint: 'male developer portrait',
+      bio: "Sahil leads our development team with a passion for clean code and scalable architecture. With over a decade of experience, he oversees all technical aspects of our client projects, ensuring robust and high-performance solutions. His expertise in both frontend and backend technologies allows him to guide projects from conception to deployment seamlessly."
+  },
+  { 
+      name: 'Nitiesh Singh', 
+      role: 'UI/UX / Content', 
+      avatar: 'NS', 
+      image: 'https://placehold.co/300x300.png', 
+      hint: 'male designer portrait',
+      bio: "Nitiesh is the creative force behind our user-centric designs and compelling content strategies. He specializes in creating engaging user experiences that are not only visually appealing but also highly intuitive. Nitiesh works closely with clients to translate their brand's story into digital experiences that resonate with their audience."
+  },
 ];
 
 export default function TeamPage() {
@@ -37,29 +46,40 @@ export default function TeamPage() {
       
       <main className="flex-grow container mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">Meet the <span className="text-primary">Team</span></h2>
+          <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">Meet the <span className="text-primary">Leadership</span></h2>
           <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">The passionate individuals dedicated to building your digital success story.</p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-12 max-w-5xl mx-auto">
           {teamMembers.map((member, index) => (
-            <Card key={index} className="text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card group border-border/60 hover:border-primary/50">
+            <Card key={index} className="text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-1 bg-card border-border/60 hover:border-primary/50 flex flex-col items-center p-8">
               <CardHeader className="items-center">
-                 <div className="relative w-32 h-32">
-                    <Image 
-                        src={member.image} 
-                        alt={`Portrait of ${member.name}`}
-                        width={128}
-                        height={128}
-                        className="rounded-full shadow-lg"
-                        data-ai-hint={member.hint}
-                    />
+                 <div className="relative w-40 h-40">
+                    <Avatar className="w-full h-full border-4 border-primary/50">
+                        <AvatarImage 
+                            src={member.image} 
+                            alt={`Portrait of ${member.name}`}
+                            data-ai-hint={member.hint}
+                        />
+                         <AvatarFallback className="text-4xl">{member.avatar}</AvatarFallback>
+                    </Avatar>
                  </div>
               </CardHeader>
-              <CardContent>
-                <h3 className="text-xl font-semibold text-foreground">{member.name}</h3>
-                <p className="text-primary">{member.role}</p>
+              <CardContent className="flex-grow">
+                <h3 className="text-2xl font-semibold text-foreground mt-4">{member.name}</h3>
+                <p className="text-primary font-medium">{member.role}</p>
+                <p className="text-muted-foreground mt-4 text-sm">{member.bio}</p>
               </CardContent>
+              <CardFooter>
+                  <div className="flex gap-4">
+                      <Button variant="outline" size="icon" asChild>
+                          <a href="#" aria-label={`${member.name}'s Twitter`}><Twitter className="h-5 w-5"/></a>
+                      </Button>
+                       <Button variant="outline" size="icon" asChild>
+                          <a href="#" aria-label={`${member.name}'s LinkedIn`}><Linkedin className="h-5 w-5"/></a>
+                      </Button>
+                  </div>
+              </CardFooter>
             </Card>
           ))}
         </div>
