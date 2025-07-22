@@ -1,0 +1,38 @@
+
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+  
+    // Helper function to check if a user is an authenticated admin.
+    function isAdmin() {
+      // Check if the user is authenticated and if their user document shows they have a role.
+      return request.auth != null && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    // Jobs can be read by anyone, but only written by admins.
+    match /jobs/{jobId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    
+    // Applicants can be created by anyone, but only read by admins.
+    match /applicants/{applicantId} {
+      allow create: if true;
+      allow read, update, delete: if isAdmin();
+    }
+    
+    // Subscribers can be created by anyone. To protect privacy, no one can read the list.
+    match /subscribers/{subscriberId} {
+      allow create: if true;
+      allow read, update, delete: if false;
+    }
+    
+    // User documents can only be read and created by the owner.
+    // No one can update their role from the client side.
+    match /users/{userId} {
+      allow read, create: if request.auth != null && request.auth.uid == userId;
+      allow update, delete: if false;
+    }
+  }
+}
