@@ -93,7 +93,7 @@ function ApplicantsPage() {
           Applied On <ArrowUpDown className="ml-2 h-4 w-4" />
         </Button>
       ),
-      cell: ({ row }) => <div>{format(row.getValue("appliedAt") as Date, "MMM d, yyyy 'at' h:mm a")}</div>
+      cell: ({ row }) => <div>{format(new Date(row.getValue("appliedAt") as string), "MMM d, yyyy 'at' h:mm a")}</div>
     },
   ];
 

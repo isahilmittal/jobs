@@ -8,8 +8,23 @@ import { Job } from '@/lib/types';
 let memoryJobs: Job[] = [];
 let initialized = false;
 
-// Helper to create a deep copy
-const deepCopy = <T,>(obj: T): T => JSON.parse(JSON.stringify(obj));
+// Helper to create a deep copy and handle dates
+const deepCopy = <T,>(obj: T): T => {
+    const data = JSON.parse(JSON.stringify(obj));
+    // Manually convert date strings back to Date objects
+    if (Array.isArray(data)) {
+        data.forEach(item => {
+            if (item.createdAt) item.createdAt = new Date(item.createdAt);
+            if (item.appliedAt) item.appliedAt = new Date(item.appliedAt);
+        });
+    } else if (data && data.createdAt) {
+        data.createdAt = new Date(data.createdAt);
+    } else if (data && data.appliedAt) {
+        data.appliedAt = new Date(data.appliedAt);
+    }
+    return data;
+};
+
 
 function initializeMemoryJobs() {
     if (initialized) return;
@@ -63,16 +78,19 @@ export async function getJobs(includeExpired = false): Promise<Job[]> {
     initializeMemoryJobs();
     console.log("Using in-memory jobs data. Firestore is disconnected.");
     
+    // Create a fresh copy to avoid mutation issues
+    const jobsCopy = deepCopy(memoryJobs);
+
+    const sortedJobs = jobsCopy.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+
     if (includeExpired) {
-        return deepCopy(memoryJobs).sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        return sortedJobs;
     }
     
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
     
-    return deepCopy(memoryJobs)
-      .filter(job => new Date(job.createdAt) >= sevenDaysAgo)
-      .sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return sortedJobs.filter(job => new Date(job.createdAt) >= sevenDaysAgo);
 }
 
 export async function getJob(id: string): Promise<Job | null> {

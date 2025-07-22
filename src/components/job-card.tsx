@@ -71,7 +71,7 @@ export function JobCard({ job, showAdminActions, onEdit, onDelete }: JobCardProp
             <CardTitle className="text-lg font-semibold group-hover:text-primary transition-colors">{job.title}</CardTitle>
             <CardDescription className="flex items-center pt-1 text-xs text-muted-foreground">
               <Calendar className="w-3.5 h-3.5 mr-1.5" />
-              Posted {formatDistanceToNow(job.createdAt, { addSuffix: true })}
+              Posted {formatDistanceToNow(new Date(job.createdAt), { addSuffix: true })}
             </CardDescription>
           </div>
           {showAdminActions && onEdit && onDelete && (

@@ -78,7 +78,7 @@ export default function Home() {
                           job.description.toLowerCase().includes(searchQuery.toLowerCase());
       const tagsMatch = selectedTags.length === 0 || selectedTags.every(tag => job.tags.includes(tag));
       return searchMatch && tagsMatch;
-    }).sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [jobs, searchQuery, selectedTags]);
 
 

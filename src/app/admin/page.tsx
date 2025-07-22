@@ -239,7 +239,7 @@ function AdminPage() {
         </Button>
       ),
       cell: ({ row }) => {
-        const date = row.getValue("createdAt") as Date;
+        const date = new Date(row.getValue("createdAt") as string);
         const sevenDaysAgo = new Date();
         sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
         const isExpired = date < sevenDaysAgo;
@@ -340,7 +340,7 @@ function AdminPage() {
                         <Briefcase className="h-4 w-4 text-muted-foreground"/>
                     </CardHeader>
                     <CardContent>
-                        <div className="text-2xl font-bold">{jobs.filter(job => { const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); return job.createdAt >= sevenDaysAgo; }).length}</div>
+                        <div className="text-2xl font-bold">{jobs.filter(job => { const sevenDaysAgo = new Date(); sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7); return new Date(job.createdAt) >= sevenDaysAgo; }).length}</div>
                         <p className="text-xs text-muted-foreground">Jobs posted in the last 7 days</p>
                     </CardContent>
                 </Card>
