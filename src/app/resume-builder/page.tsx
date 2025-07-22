@@ -3,7 +3,7 @@
 
 import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
-import { Briefcase, Plus, Trash2, Printer, Wand2, Loader2, Sparkles } from 'lucide-react';
+import { Briefcase, Plus, Trash2, Printer, Wand2, Loader2, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,7 +11,8 @@ import { Separator } from '@/components/ui/separator';
 import { useReactToPrint } from 'react-to-print';
 import { useToast } from '@/hooks/use-toast';
 import { enhanceResume, EnhanceResumeInput, EnhanceResumeOutput } from '@/ai/flows/enhance-resume';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { parseResumeFromFile, ParseResumeOutput } from '@/ai/flows/parse-resume-from-file';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 
@@ -134,8 +135,10 @@ export default function ResumeBuilderPage() {
     
     const [aiFeedback, setAiFeedback] = useState<AiFeedback | null>(null);
     const [isGenerating, startGenerationTransition] = useTransition();
+    const [isParsing, startParsingTransition] = useTransition();
     const { toast } = useToast();
     const resumePreviewRef = useRef<HTMLDivElement>(null);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     const handlePrint = useReactToPrint({
         content: () => resumePreviewRef.current,
@@ -191,7 +194,6 @@ export default function ResumeBuilderPage() {
     const handleEnhanceResume = () => {
         const resumeInput: EnhanceResumeInput = {
             summary: resumeData.summary,
-            // Exclude 'id' from experience before sending to AI
             experience: resumeData.experience.map(({id, ...rest}) => rest),
             skills: resumeData.skills,
         };
@@ -199,8 +201,6 @@ export default function ResumeBuilderPage() {
         startGenerationTransition(async () => {
             try {
                 const result = await enhanceResume(resumeInput);
-
-                // Update summary
                 setResumeData(prev => ({
                     ...prev,
                     summary: result.enhancedSummary,
@@ -225,6 +225,36 @@ export default function ResumeBuilderPage() {
         });
     }
 
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => {
+            const resumeDataUri = reader.result as string;
+            startParsingTransition(async () => {
+                try {
+                    const result = await parseResumeFromFile({ resumeDataUri });
+                    setResumeData({
+                        ...result,
+                        linkedin: result.linkedin || '',
+                        experience: result.experience.map(exp => ({...exp, id: Date.now() + Math.random()})),
+                        education: result.education.map(edu => ({...edu, id: Date.now() + Math.random()})),
+                    });
+                    setAiFeedback(null); // Clear previous feedback
+                    toast({ title: "Resume Parsed!", description: "Your details have been imported." });
+                } catch (error) {
+                    console.error("Failed to parse resume:", error);
+                    toast({ variant: "destructive", title: "Parsing Error", description: "Could not read resume. Please try a different file." });
+                }
+            });
+        };
+        reader.onerror = (error) => {
+            console.error("File reading error:", error);
+            toast({ variant: "destructive", title: "File Error", description: "Could not read the selected file." });
+        };
+    };
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
@@ -244,17 +274,41 @@ export default function ResumeBuilderPage() {
       
       <main className="flex-grow grid md:grid-cols-2 gap-8 container mx-auto p-4">
         {/* Editor Panel */}
-        <div className="bg-card p-6 rounded-lg shadow-md h-[calc(100vh-100px)] overflow-y-auto">
+        <div className="bg-card p-6 rounded-lg shadow-md h-[calc(100vh-100px)] overflow-y-auto relative">
+          {isParsing && (
+            <div className="absolute inset-0 bg-black/60 z-10 flex flex-col justify-center items-center backdrop-blur-sm rounded-lg">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
+                <p className="text-lg font-semibold">Parsing your resume...</p>
+            </div>
+          )}
           <div className="flex justify-between items-center mb-6">
              <h2 className="text-2xl font-bold">Resume Editor</h2>
              <div className="flex gap-2">
-                <Button onClick={handleEnhanceResume} variant="outline" disabled={isGenerating}>
+                <Button onClick={handleEnhanceResume} variant="outline" disabled={isGenerating || isParsing}>
                     {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : <Sparkles className="mr-2 text-primary"/>}
                     Enhance with AI
                 </Button>
-                <Button onClick={handlePrint}><Printer className="mr-2"/>Export to PDF</Button>
+                <Button onClick={handlePrint} disabled={isParsing}><Printer className="mr-2"/>Export to PDF</Button>
              </div>
           </div>
+
+            <Card className="mb-6">
+                <CardHeader>
+                    <CardTitle className="text-lg flex items-center gap-2"><Upload className="text-primary"/>Import from File</CardTitle>
+                    <CardDescription>Upload your existing resume (PDF, DOCX) to get started faster.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Input 
+                        ref={fileInputRef}
+                        type="file" 
+                        accept=".pdf,.doc,.docx" 
+                        onChange={handleFileChange}
+                        disabled={isParsing}
+                        className="file:text-primary file:font-semibold"
+                    />
+                </CardContent>
+            </Card>
+
 
           {aiFeedback && (
             <Card className="mb-6 bg-primary/5 border-primary/20">
@@ -301,7 +355,6 @@ export default function ResumeBuilderPage() {
              <div className="space-y-2 p-4 border rounded-md">
                  <div className="flex justify-between items-center">
                     <h3 className="font-semibold text-lg text-primary">Professional Summary</h3>
-                    <Button variant="outline" size="sm" disabled><Wand2 className="mr-2"/>AI Suggest</Button>
                  </div>
                 <Textarea placeholder="Write a brief summary of your career..." value={resumeData.summary} onChange={e => handleInputChange('summary', e.target.value)} rows={4}/>
             </div>
