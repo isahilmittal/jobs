@@ -1,6 +1,6 @@
 
 import Link from 'next/link';
-import { Briefcase } from 'lucide-react';
+import { BarChart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,16 +19,17 @@ const teamMembers = [
 export default function TeamPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="bg-card/80 border-b sticky top-0 z-20 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+      <header className="bg-background/80 border-b sticky top-0 z-20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <Briefcase className="h-7 w-7 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
+            <BarChart className="h-7 w-7 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">Stellar Digital</h1>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
+            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
         </div>
       </header>
@@ -66,7 +67,7 @@ export default function TeamPage() {
       <footer className="bg-card border-t">
           <div className="container mx-auto px-4 py-8">
             <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-                <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
+                <p>&copy; {new Date().getFullYear()} Stellar Digital. All rights reserved.</p>
                 <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
                     <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>

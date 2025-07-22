@@ -3,8 +3,8 @@ import './globals.css';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'analyzed.in | Find Your Next Opportunity',
-  description: 'analyzed.in: The premier job board for top talent in the tech industry.',
+  title: 'Stellar Digital | Digital Marketing Agency',
+  description: 'Stellar Digital: Driving growth with expert SEO, Content, and PPC services.',
 };
 
 export default function RootLayout({

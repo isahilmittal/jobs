@@ -1,209 +1,161 @@
 
-"use client";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { ArrowRight, BarChart, Search, PenTool, Lightbulb, TrendingUp, Users } from 'lucide-react';
+import Image from 'next/image';
 
-import { useState, useMemo, useEffect, useTransition } from "react";
-import Link from "next/link";
-import { Job } from "@/lib/types";
-import { JobCard } from "@/components/job-card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Search, Tag, X, Briefcase, Star, LogIn, Loader2, Mail, Users, Info } from "lucide-react";
-import { getCurrentUser } from "@/lib/auth";
-import { getJobs, addInitialJobs } from "@/lib/jobs";
-import { addSubscriber } from "@/lib/subscribers";
-import { useToast } from "@/hooks/use-toast";
-
-export default function Home() {
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedTags, setSelectedTags] = useState<string[]>([]);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isSubscribing, startSubscribeTransition] = useTransition();
-  const [email, setEmail] = useState("");
-  const { toast } = useToast();
-
-  useEffect(() => {
-    async function fetchData() {
-      setIsLoading(true);
-      
-      const user = await getCurrentUser();
-      setIsLoggedIn(!!user);
-      
-      let fetchedJobs = await getJobs();
-      if (fetchedJobs.length === 0) {
-        await addInitialJobs();
-        fetchedJobs = await getJobs();
-      }
-      setJobs(fetchedJobs);
-
-      setIsLoading(false);
-    }
-    fetchData();
-  }, []);
-
-  const handleSubscribe = async (e: React.FormEvent<HTMLFormElement>) => {
-      e.preventDefault();
-      if (!email) {
-          toast({ variant: 'destructive', title: 'Error', description: 'Please enter your email address.'});
-          return;
-      }
-      startSubscribeTransition(async () => {
-          const result = await addSubscriber(email);
-          if (result.success) {
-              toast({ title: 'Subscribed!', description: "Thanks for joining our newsletter."});
-              setEmail("");
-          } else {
-              toast({ variant: 'destructive', title: 'Error', description: result.message });
-          }
-      });
-  }
-
-  const toggleTagSelection = (tag: string) => {
-    setSelectedTags(prev => 
-      prev.includes(tag) ? prev.filter(t => t !== tag) : [...prev, tag]
-    );
-  };
-
-  const allTags = useMemo(() => {
-    const tagsSet = new Set<string>();
-    jobs.forEach(job => job.tags.forEach(tag => tagsSet.add(tag)));
-    return Array.from(tagsSet).sort();
-  }, [jobs]);
-
-  const filteredJobs = useMemo(() => {
-    return jobs.filter(job => {
-      const searchMatch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          job.description.toLowerCase().includes(searchQuery.toLowerCase());
-      const tagsMatch = selectedTags.length === 0 || selectedTags.every(tag => job.tags.includes(tag));
-      return searchMatch && tagsMatch;
-    }).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
-  }, [jobs, searchQuery, selectedTags]);
-
-
+export default function AgencyHomePage() {
   return (
-    <>
-      <div className="flex flex-col min-h-screen bg-background">
-        <header className="bg-card/80 border-b sticky top-0 z-20 backdrop-blur-sm">
-          <div className="container mx-auto px-4 py-3 flex justify-between items-center">
-            <Link href="/" className="flex items-center gap-2">
-              <Briefcase className="h-7 w-7 text-primary" />
-              <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
-            </Link>
-            <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-                <Link href="/" className="font-bold text-foreground">Home</Link>
-                <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-                <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
-            </nav>
-            {isLoggedIn && (
-                <Button asChild variant="default" size="sm">
-                    <Link href="/admin">Admin Dashboard</Link>
-                </Button>
-            )}
-          </div>
-        </header>
+    <div className="flex flex-col min-h-screen bg-background text-foreground">
+      {/* Header */}
+      <header className="bg-background/80 border-b sticky top-0 z-20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
+          <Link href="/" className="flex items-center gap-2">
+            <BarChart className="h-7 w-7 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">Stellar Digital</h1>
+          </Link>
+          <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
+            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
+          </nav>
+          <Button asChild>
+            <Link href="/contact">Get a Quote <ArrowRight className="ml-2 h-4 w-4" /></Link>
+          </Button>
+        </div>
+      </header>
 
-        <main className="container mx-auto px-4 py-8 flex-grow">
-          <div className="text-center mb-12 relative">
-             <div className="absolute inset-0.5 bg-primary/10 rounded-full blur-3xl -z-10"></div>
-            <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">Find Your Next <span className="text-primary">Opportunity</span></h2>
-            <p className="text-lg text-muted-foreground mt-4 max-w-2xl mx-auto">Your one-stop shop for amazing career opportunities. Browse, search, and apply to your dream job today.</p>
+      {/* Main Content */}
+      <main className="flex-grow">
+        {/* Hero Section */}
+        <section className="relative text-center py-24 md:py-32 bg-background">
+          <div className="absolute inset-0.5 bg-primary/10 rounded-full blur-3xl -z-10"></div>
+          <div className="container mx-auto px-4">
+            <h2 className="text-4xl md:text-6xl font-extrabold text-foreground tracking-tighter">
+              Amplify Your Brand's <span className="text-primary">Digital Presence</span>
+            </h2>
+            <p className="text-lg text-muted-foreground mt-6 max-w-2xl mx-auto">
+              We are a results-driven digital marketing agency specializing in SEO, content strategy, and PPC to help you achieve stellar growth.
+            </p>
+            <div className="mt-8 flex justify-center gap-4">
+              <Button asChild size="lg">
+                <Link href="/services">Our Services</Link>
+              </Button>
+              <Button asChild size="lg" variant="outline">
+                <Link href="/contact">Contact Us</Link>
+              </Button>
+            </div>
           </div>
-          
-          <div className="mb-8 p-6 bg-card/50 border rounded-lg shadow-sm">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-              <div>
-                <label htmlFor="search" className="block text-sm font-medium text-foreground mb-2">Search Jobs</label>
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                  <Input 
-                    id="search"
-                    placeholder="Search by title, description, or tag..."
-                    className="pl-10 h-11 bg-background"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                  />
+        </section>
+
+        {/* Services Section */}
+        <section className="py-20 bg-card/50">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl md:text-4xl font-bold text-foreground">What We Do</h3>
+              <p className="text-md text-muted-foreground mt-3 max-w-xl mx-auto">Our expertise spans the full digital marketing spectrum.</p>
+            </div>
+            <div className="grid md:grid-cols-3 gap-8">
+              <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
+                <Search className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h4 className="text-xl font-semibold mb-2">Search Engine Optimization</h4>
+                <p className="text-muted-foreground">Boost your organic traffic and climb the search rankings with our proven SEO strategies.</p>
+              </Card>
+              <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
+                <PenTool className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h4 className="text-xl font-semibold mb-2">Content Marketing</h4>
+                <p className="text-muted-foreground">Engage your audience and build authority with high-quality, compelling content.</p>
+              </Card>
+              <Card className="p-8 text-center bg-card shadow-lg transition-transform hover:-translate-y-2">
+                <Lightbulb className="h-12 w-12 text-primary mx-auto mb-4" />
+                <h4 className="text-xl font-semibold mb-2">PPC Campaigns</h4>
+                <p className="text-muted-foreground">Drive targeted leads and maximize ROI with our expertly managed pay-per-click campaigns.</p>
+              </Card>
+            </div>
+          </div>
+        </section>
+
+        {/* Portfolio/Work Section */}
+        <section className="py-20">
+          <div className="container mx-auto px-4">
+            <div className="text-center mb-12">
+              <h3 className="text-3xl md:text-4xl font-bold text-foreground">Our Work</h3>
+              <p className="text-md text-muted-foreground mt-3 max-w-xl mx-auto">We're proud of the results we've delivered.</p>
+            </div>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div className="group relative overflow-hidden rounded-lg">
+                <Image src="https://placehold.co/600x400.png" alt="Project 1" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="marketing project" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <h4 className="text-white text-lg font-bold">E-commerce SEO Growth</h4>
                 </div>
               </div>
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                   <Tag className="h-5 w-5 text-muted-foreground" />
-                   <h3 className="text-sm font-medium text-foreground">Filter by Tags</h3>
+              <div className="group relative overflow-hidden rounded-lg">
+                <Image src="https://placehold.co/600x400.png" alt="Project 2" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="analytics dashboard" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <h4 className="text-white text-lg font-bold">SaaS Content Strategy</h4>
                 </div>
-                <div className="flex flex-wrap gap-2">
-                  {allTags.slice(0, 7).map(tag => (
-                    <Badge 
-                      key={tag}
-                      variant={selectedTags.includes(tag) ? "default" : "secondary"}
-                      onClick={() => toggleTagSelection(tag)}
-                      className="cursor-pointer transition-all hover:scale-105"
-                    >
-                      {tag}
-                    </Badge>
-                  ))}
-                  {selectedTags.length > 0 && (
-                    <Button variant="ghost" size="sm" onClick={() => setSelectedTags([])} className="h-auto py-0.5 px-2">
-                      <X className="mr-1 h-3 w-3" /> Clear
-                    </Button>
-                  )}
+              </div>
+              <div className="group relative overflow-hidden rounded-lg">
+                <Image src="https://placehold.co/600x400.png" alt="Project 3" width={600} height={400} className="transition-transform duration-300 group-hover:scale-105" data-ai-hint="social media campaign" />
+                <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                   <h4 className="text-white text-lg font-bold">Local Business PPC</h4>
                 </div>
               </div>
             </div>
           </div>
-            {isLoading ? (
-                 <div className="flex justify-center items-center py-16">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </section>
+
+        {/* Testimonials */}
+        <section className="py-20 bg-card/50">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-12">
+                    <h3 className="text-3xl md:text-4xl font-bold text-foreground">What Our Clients Say</h3>
                 </div>
-            ) : filteredJobs.length > 0 ? (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {filteredJobs.map((job, index) => (
-                    <JobCard key={job.id} job={job} showAdminActions={false} animationDelay={index * 100} />
-                ))}
+                <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+                    <Card className="p-6 bg-card">
+                        <p className="text-muted-foreground mb-4">"Stellar Digital transformed our online presence. Their SEO expertise led to a 200% increase in organic traffic in just six months. Highly recommended!"</p>
+                        <div className="flex items-center gap-4">
+                            <Image src="https://placehold.co/100x100.png" alt="Client 1" width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
+                            <div>
+                                <p className="font-semibold">Jane Doe</p>
+                                <p className="text-sm text-muted-foreground">CEO, TechForward</p>
+                            </div>
+                        </div>
+                    </Card>
+                    <Card className="p-6 bg-card">
+                        <p className="text-muted-foreground mb-4">"The best digital marketing team we've ever worked with. Their content strategy was a game-changer for our brand engagement."</p>
+                        <div className="flex items-center gap-4">
+                            <Image src="https://placehold.co/100x100.png" alt="Client 2" width={48} height={48} className="rounded-full" data-ai-hint="person portrait" />
+                            <div>
+                                <p className="font-semibold">John Smith</p>
+                                <p className="text-sm text-muted-foreground">Founder, Innovate Co.</p>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
-            ) : (
-                <div className="text-center py-16 border-2 border-dashed rounded-lg bg-card">
-                <Star className="mx-auto h-12 w-12 text-muted-foreground" />
-                <h3 className="mt-4 text-lg font-semibold text-foreground">No Jobs Found</h3>
-                <p className="text-muted-foreground mt-2">No jobs found that match your criteria. Try adjusting your search or filters.</p>
-                </div>
-            )}
-        </main>
-        
-        <footer className="bg-card border-t mt-12">
-          <div className="container mx-auto px-4 py-8">
-            <div className="grid md:grid-cols-2 gap-8 items-center">
-                <div>
-                    <h3 className="text-lg font-semibold text-foreground">Stay Updated on New Jobs</h3>
-                    <p className="text-muted-foreground mt-2">Subscribe to our newsletter to receive the latest job postings directly in your inbox.</p>
-                </div>
-                <form onSubmit={handleSubscribe} className="flex items-center gap-2">
-                    <Input 
-                        type="email" 
-                        placeholder="Enter your email" 
-                        className="bg-background"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        disabled={isSubscribing}
-                        aria-label="Email for newsletter"
-                    />
-                    <Button type="submit" disabled={isSubscribing}>
-                        {isSubscribing ? <Loader2 className="animate-spin"/> : <Mail />}
-                        <span className="ml-2 hidden sm:inline">Subscribe</span>
-                    </Button>
-                </form>
             </div>
-            <div className="mt-8 pt-8 border-t flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
-                <p>&copy; {new Date().getFullYear()} analyzed.in. All rights reserved.</p>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-card border-t">
+        <div className="container mx-auto px-4 py-8">
+            <div className="flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground">
+                <p>&copy; {new Date().getFullYear()} Stellar Digital. All rights reserved.</p>
                 <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
-                    <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>
-                    <Link href="/login" className="transition-colors hover:text-foreground">Admin Login</Link>
+                    <Link href="/careers" className="transition-colors hover:text-foreground">Careers</Link>
+                    <Link href="/contact" className="transition-colors hover:text-foreground">Contact</Link>
                 </div>
             </div>
-          </div>
-        </footer>
-      </div>
-    </>
+        </div>
+      </footer>
+    </div>
   );
 }
+
+// Dummy Card component to avoid breaking changes if not present
+const Card = ({ className, children }: { className?: string, children: React.ReactNode }) => (
+    <div className={`bg-card rounded-lg border ${className}`}>{children}</div>
+);

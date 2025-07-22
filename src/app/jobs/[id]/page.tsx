@@ -17,7 +17,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogTrigger } from '@/components/ui/dialog';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { useToast } from '@/hooks/use-toast';
-import { Briefcase, Calendar, ChevronLeft, Loader2, Tag, FileText, Link as LinkIcon, Dot } from 'lucide-react';
+import { BarChart, Calendar, ChevronLeft, Loader2, Tag, FileText, Link as LinkIcon, Dot } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { formatDistanceToNow } from 'date-fns';
 import { JobList } from '@/components/job-list';
@@ -226,14 +226,14 @@ export default function JobApplicationPage() {
 
   return (
     <>
-      <header className="bg-card/80 border-b sticky top-0 z-20 backdrop-blur-sm">
+      <header className="bg-background/80 border-b sticky top-0 z-20 backdrop-blur-sm">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center">
             <Button variant="outline" size="sm" asChild>
-                <Link href="/"><ChevronLeft className="mr-2 h-4 w-4" />Back to Main</Link>
+                <Link href="/careers"><ChevronLeft className="mr-2 h-4 w-4" />Back to Careers</Link>
             </Button>
             <Link href="/" className="flex items-center gap-2">
-                <Briefcase className="h-6 w-6 text-primary" />
-                <h1 className="text-lg font-bold text-foreground hidden sm:block">analyzed.in</h1>
+                <BarChart className="h-6 w-6 text-primary" />
+                <h1 className="text-lg font-bold text-foreground hidden sm:block">Stellar Digital</h1>
             </Link>
         </div>
       </header>
@@ -253,5 +253,3 @@ export default function JobApplicationPage() {
     </>
   );
 }
-
-    

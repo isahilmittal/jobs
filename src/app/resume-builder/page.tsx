@@ -3,7 +3,7 @@
 
 import { useState, useRef, useTransition } from 'react';
 import Link from 'next/link';
-import { Briefcase, Plus, Trash2, Printer, Wand2, Loader2, Sparkles, Upload } from 'lucide-react';
+import { BarChart, Plus, Trash2, Printer, Wand2, Loader2, Sparkles, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
@@ -156,7 +156,7 @@ export default function ResumeBuilderPage() {
             company: 'Tech Solutions Inc.',
             startDate: 'Jan 2021',
             endDate: 'Present',
-            description: '- Led a team of 5 developers in the creation of a new client-facing web application.\n- Improved application performance by 30% through code optimization.\n- Mentored junior developers and conducted code reviews.'
+            description: '- Led a team of 5 developers in the creation of a new client-facing web application.\\n- Improved application performance by 30% through code optimization.\\n- Mentored junior developers and conducted code reviews.'
         }],
         education: [{
             id: 1,
@@ -168,10 +168,10 @@ export default function ResumeBuilderPage() {
         projects: [{
             id: 1,
             title: 'Personal Portfolio Website',
-            description: '- Developed a responsive personal portfolio using Next.js and Tailwind CSS.\n- Deployed on Vercel with CI/CD integration.'
+            description: '- Developed a responsive personal portfolio using Next.js and Tailwind CSS.\\n- Deployed on Vercel with CI/CD integration.'
         }],
         skills: 'JavaScript, React, Next.js, TypeScript, Node.js, Python, SQL, AWS',
-        familyDetails: 'Father\'s Name: Robert Doe\nMarital Status: Single',
+        familyDetails: 'Father\'s Name: Robert Doe\\nMarital Status: Single',
         declaration: 'I hereby declare that all the information provided above is true to the best of my knowledge.'
     });
     
@@ -328,23 +328,24 @@ export default function ResumeBuilderPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground">
-      <header className="bg-card/80 border-b sticky top-0 z-20 backdrop-blur-sm">
-        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+      <header className="bg-background/80 border-b sticky top-0 z-20 backdrop-blur-sm">
+        <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2">
-            <Briefcase className="h-7 w-7 text-primary" />
-            <h1 className="text-xl font-bold text-foreground">analyzed.in</h1>
+            <BarChart className="h-7 w-7 text-primary" />
+            <h1 className="text-xl font-bold text-foreground">Stellar Digital</h1>
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-            <Link href="/resume-builder" className="font-bold text-foreground">Resume Builder</Link>
+            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
         </div>
       </header>
       
       <main className="flex-grow grid md:grid-cols-2 gap-8 container mx-auto p-4">
         {/* Editor Panel */}
-        <div className="bg-card p-6 rounded-lg shadow-md h-[calc(100vh-100px)] overflow-y-auto relative">
+        <div className="bg-card p-6 rounded-lg shadow-md h-[calc(100vh-116px)] overflow-y-auto relative">
           {isParsing && (
             <div className="absolute inset-0 bg-black/60 z-10 flex flex-col justify-center items-center backdrop-blur-sm rounded-lg">
                 <Loader2 className="h-8 w-8 animate-spin text-primary mb-4" />
@@ -509,7 +510,7 @@ export default function ResumeBuilderPage() {
         </div>
 
         {/* Preview Panel */}
-        <div className="bg-muted p-6 rounded-lg h-[calc(100vh-100px)] overflow-y-auto">
+        <div className="bg-muted p-6 rounded-lg h-[calc(100vh-116px)] overflow-y-auto">
             <div ref={resumePreviewRef}>
               <ResumePreview data={resumeData} />
             </div>
