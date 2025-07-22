@@ -6,7 +6,6 @@ import {
     signInWithEmailAndPassword, 
     signOut, 
     onAuthStateChanged,
-    createUserWithEmailAndPassword,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
@@ -97,27 +96,25 @@ export async function logout(): Promise<void> {
     await signOut(auth);
 };
 
-export async function getCurrentUser(): Promise<FirebaseUser | null> {
+export async function getCurrentUserWithRole(): Promise<{user: FirebaseUser; role: UserRole} | null> {
     return new Promise((resolve) => {
-        const unsubscribe = onAuthStateChanged(auth, (user) => {
+        const unsubscribe = onAuthStateChanged(auth, async (user) => {
             unsubscribe();
-            resolve(user);
+            if (user) {
+                const userDocRef = doc(db, 'users', user.uid);
+                const docSnap = await getDoc(userDocRef);
+
+                if (docSnap.exists()) {
+                    resolve({ user, role: (docSnap.data() as {role: UserRole}).role });
+                } else {
+                    resolve(null);
+                }
+            } else {
+                resolve(null);
+            }
         });
     });
 };
-
-export async function getCurrentUserWithRole(): Promise<{user: FirebaseUser; role: UserRole} | null> {
-    const user = await getCurrentUser();
-    if (!user) return null;
-
-    const userDocRef = doc(db, 'users', user.uid);
-    const docSnap = await getDoc(userDocRef);
-
-    if (docSnap.exists()) {
-      return { user, role: (docSnap.data() as {role: UserRole}).role };
-    }
-    return null;
-}
 
 export async function getAllAdminUsers(): Promise<AdminUser[]> {
     const usersCollectionRef = collection(db, 'users');
@@ -134,5 +131,3 @@ export async function getAllAdminUsers(): Promise<AdminUser[]> {
     });
     return users;
 }
-
-    
