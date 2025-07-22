@@ -42,8 +42,10 @@ export default function ServicesPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
              <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
+            <Link href="/services" className="font-bold text-foreground">Services</Link>
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
         </div>
       </header>

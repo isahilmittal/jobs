@@ -15,8 +15,10 @@ export default function AboutPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
+            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+            <Link href="/about" className="font-bold text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
         </div>
       </header>
@@ -24,7 +26,7 @@ export default function AboutPage() {
       <main className="flex-grow container mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">About <span className="text-primary">Analyzed.in</span></h2>
-          <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">We're on a mission to connect top talent with the world's most innovative companies.</p>
+          <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">We're on a mission to build the digital future for our clients.</p>
         </div>
 
         <div className="grid md:grid-cols-2 gap-12 items-center">
@@ -37,7 +39,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">Our Story</h3>
-                <p className="text-muted-foreground mt-2">Founded in 2024, Analyzed.in started with a simple idea: to make the job search process more efficient, transparent, and human. We saw the disconnect between talented professionals and the companies that needed them, and we set out to build a bridge.</p>
+                <p className="text-muted-foreground mt-2">Founded in 2024, Analyzed.in started with a simple idea: to make digital marketing and web development accessible, transparent, and results-driven. We saw the disconnect between business goals and digital execution, and we set out to build a bridge with technology and expertise.</p>
               </div>
             </div>
              <div className="flex items-start gap-4">
@@ -48,7 +50,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">Our Mission</h3>
-                <p className="text-muted-foreground mt-2">Our mission is to empower career growth and organizational success by creating the most effective platform for discovering opportunities and hiring talent. We believe the right job can transform a person's life and the right person can transform a business.</p>
+                <p className="text-muted-foreground mt-2">Our mission is to empower businesses to thrive in the digital landscape. We craft bespoke websites and marketing strategies that not only look great but also perform, converting visitors into loyal customers and driving measurable growth.</p>
               </div>
             </div>
              <div className="flex items-start gap-4">
@@ -59,7 +61,7 @@ export default function AboutPage() {
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-foreground">Who We Are</h3>
-                <p className="text-muted-foreground mt-2">We are a team of technologists, recruiters, and dreamers passionate about building a better future of work. We combine cutting-edge technology with a human-centric approach to create a job board that truly works for everyone.</p>
+                <p className="text-muted-foreground mt-2">We are a team of technologists, marketers, designers, and dreamers passionate about building a better digital future. We combine cutting-edge technology with a human-centric approach to create digital experiences that deliver.</p>
               </div>
             </div>
           </div>
@@ -83,7 +85,7 @@ export default function AboutPage() {
                 <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
                     <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>
-                    <Link href="/login" className="transition-colors hover:text-foreground">Admin Login</Link>
+                    <Link href="/careers" className="transition-colors hover:text-foreground">Careers</Link>
                 </div>
             </div>
           </div>

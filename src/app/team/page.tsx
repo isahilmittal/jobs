@@ -27,8 +27,10 @@ export default function TeamPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
             <Link href="/" className="text-muted-foreground transition-colors hover:text-foreground">Home</Link>
-            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Job Listings</Link>
-            <Link href="/resume-builder" className="text-muted-foreground transition-colors hover:text-foreground">Resume Builder</Link>
+            <Link href="/services" className="text-muted-foreground transition-colors hover:text-foreground">Services</Link>
+            <Link href="/about" className="text-muted-foreground transition-colors hover:text-foreground">About</Link>
+            <Link href="/careers" className="text-muted-foreground transition-colors hover:text-foreground">Careers</Link>
+            <Link href="/contact" className="text-muted-foreground transition-colors hover:text-foreground">Contact</Link>
           </nav>
         </div>
       </header>
@@ -36,7 +38,7 @@ export default function TeamPage() {
       <main className="flex-grow container mx-auto px-4 py-12 md:py-20">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-extrabold text-foreground tracking-tight">Meet the <span className="text-primary">Team</span></h2>
-          <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">The passionate individuals dedicated to revolutionizing the hiring landscape and connecting you with your future.</p>
+          <p className="text-lg text-muted-foreground mt-4 max-w-3xl mx-auto">The passionate individuals dedicated to building your digital success story.</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
@@ -70,7 +72,7 @@ export default function TeamPage() {
                 <div className="flex items-center gap-4 mt-4 sm:mt-0">
                     <Link href="/about" className="transition-colors hover:text-foreground">About Us</Link>
                     <Link href="/team" className="transition-colors hover:text-foreground">Our Team</Link>
-                    <Link href="/login" className="transition-colors hover:text-foreground">Admin Login</Link>
+                    <Link href="/careers" className="transition-colors hover:text-foreground">Careers</Link>
                 </div>
             </div>
           </div>
