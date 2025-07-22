@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview An AI flow to parse a resume file and extract structured data.
@@ -29,6 +30,11 @@ const EducationSchema = z.object({
     endDate: z.string().describe("The end date of the education."),
 });
 
+const ProjectSchema = z.object({
+    title: z.string().describe("The title of the project."),
+    description: z.string().describe("A brief description of the project."),
+});
+
 const ParseResumeInputSchema = z.object({
   resumeDataUri: z
     .string()
@@ -46,6 +52,7 @@ const ParseResumeOutputSchema = z.object({
   summary: z.string().describe("The professional summary or objective."),
   experience: z.array(ExperienceSchema).describe("The work experience sections."),
   education: z.array(EducationSchema).describe("The education sections."),
+  projects: z.array(ProjectSchema).describe("The projects sections."),
   skills: z
     .string()
     .describe("A comma-separated string of skills."),
@@ -65,7 +72,7 @@ const prompt = ai.definePrompt({
   output: {schema: ParseResumeOutputSchema},
   prompt: `You are an expert resume parser. Analyze the following resume file and extract the structured data from it.
 
-If a LinkedIn profile is not present, do not include the field. Pay close attention to formatting descriptions with newlines to preserve bullet points.
+If a LinkedIn profile is not present, do not include the field. Pay close attention to formatting descriptions with newlines to preserve bullet points. If there are no projects, return an empty array.
 
 Resume File: {{media url=resumeDataUri}}
 

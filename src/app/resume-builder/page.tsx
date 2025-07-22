@@ -33,6 +33,12 @@ type Education = {
   endDate: string;
 };
 
+type Project = {
+    id: number;
+    title: string;
+    description: string;
+};
+
 type ResumeData = {
   fullName: string;
   email: string;
@@ -41,7 +47,10 @@ type ResumeData = {
   summary: string;
   experience: Experience[];
   education: Education[];
+  projects: Project[];
   skills: string;
+  familyDetails: string;
+  declaration: string;
 };
 
 type AiFeedback = Omit<EnhanceResumeOutput, 'enhancedSummary' | 'enhancedExperience'>;
@@ -81,6 +90,18 @@ const ResumePreview = ({ data }: { data: ResumeData }) => {
                     ))}
                 </section>
             )}
+            
+            {data.projects.length > 0 && (
+                 <section className="mb-6">
+                    <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Projects</h2>
+                    {data.projects.map(proj => (
+                        <div key={proj.id} className="mb-4">
+                           <h3 className="font-bold">{proj.title || "Project Title"}</h3>
+                           <p className="text-sm whitespace-pre-wrap mt-1">{proj.description || "Project description..."}</p>
+                        </div>
+                    ))}
+                </section>
+            )}
 
             {data.education.length > 0 && (
                  <section className="mb-6">
@@ -98,9 +119,23 @@ const ResumePreview = ({ data }: { data: ResumeData }) => {
             )}
 
             {data.skills && (
-                <section>
+                <section className="mb-6">
                     <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Skills</h2>
                     <p className="text-sm">{data.skills}</p>
+                </section>
+            )}
+
+            {data.familyDetails && (
+                <section className="mb-6">
+                    <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Personal Details</h2>
+                    <p className="text-sm whitespace-pre-wrap">{data.familyDetails}</p>
+                </section>
+            )}
+
+            {data.declaration && (
+                <section>
+                    <h2 className="text-sm font-bold uppercase border-b border-black pb-1 mb-2">Declaration</h2>
+                    <p className="text-sm">{data.declaration}</p>
                 </section>
             )}
         </div>
@@ -130,7 +165,14 @@ export default function ResumeBuilderPage() {
             startDate: 'Aug 2016',
             endDate: 'May 2020',
         }],
-        skills: 'JavaScript, React, Next.js, TypeScript, Node.js, Python, SQL, AWS'
+        projects: [{
+            id: 1,
+            title: 'Personal Portfolio Website',
+            description: '- Developed a responsive personal portfolio using Next.js and Tailwind CSS.\n- Deployed on Vercel with CI/CD integration.'
+        }],
+        skills: 'JavaScript, React, Next.js, TypeScript, Node.js, Python, SQL, AWS',
+        familyDetails: 'Father\'s Name: Robert Doe\nMarital Status: Single',
+        declaration: 'I hereby declare that all the information provided above is true to the best of my knowledge.'
     });
     
     const [aiFeedback, setAiFeedback] = useState<AiFeedback | null>(null);
@@ -145,11 +187,11 @@ export default function ResumeBuilderPage() {
         documentTitle: `${resumeData.fullName.replace(' ', '_')}_Resume`,
     });
 
-    const handleInputChange = (field: keyof ResumeData, value: string) => {
+    const handleInputChange = (field: keyof Omit<ResumeData, 'experience' | 'education' | 'projects'>, value: string) => {
         setResumeData(prev => ({ ...prev, [field]: value }));
     };
 
-    const handleExperienceChange = (id: number, field: keyof Experience, value: string) => {
+    const handleExperienceChange = (id: number, field: keyof Omit<Experience, 'id'>, value: string) => {
         setResumeData(prev => ({
             ...prev,
             experience: prev.experience.map(exp => exp.id === id ? { ...exp, [field]: value } : exp)
@@ -170,7 +212,7 @@ export default function ResumeBuilderPage() {
         }));
     };
     
-    const handleEducationChange = (id: number, field: keyof Education, value: string) => {
+    const handleEducationChange = (id: number, field: keyof Omit<Education, 'id'>, value: string) => {
         setResumeData(prev => ({
             ...prev,
             education: prev.education.map(edu => edu.id === id ? { ...edu, [field]: value } : edu)
@@ -188,6 +230,27 @@ export default function ResumeBuilderPage() {
         setResumeData(prev => ({
             ...prev,
             education: prev.education.filter(edu => edu.id !== id)
+        }));
+    };
+
+    const handleProjectChange = (id: number, field: keyof Omit<Project, 'id'>, value: string) => {
+        setResumeData(prev => ({
+            ...prev,
+            projects: prev.projects.map(proj => proj.id === id ? { ...proj, [field]: value } : proj)
+        }));
+    };
+
+    const addProject = () => {
+        setResumeData(prev => ({
+            ...prev,
+            projects: [...prev.projects, { id: Date.now(), title: '', description: '' }]
+        }));
+    };
+
+    const removeProject = (id: number) => {
+        setResumeData(prev => ({
+            ...prev,
+            projects: prev.projects.filter(proj => proj.id !== id)
         }));
     };
     
@@ -237,10 +300,17 @@ export default function ResumeBuilderPage() {
                 try {
                     const result = await parseResumeFromFile({ resumeDataUri });
                     setResumeData({
-                        ...result,
+                        fullName: result.fullName,
+                        email: result.email,
+                        phone: result.phone,
                         linkedin: result.linkedin || '',
+                        summary: result.summary,
                         experience: result.experience.map(exp => ({...exp, id: Date.now() + Math.random()})),
                         education: result.education.map(edu => ({...edu, id: Date.now() + Math.random()})),
+                        projects: result.projects.map(proj => ({...proj, id: Date.now() + Math.random()})),
+                        skills: result.skills,
+                        familyDetails: '', // These are not typically parsed
+                        declaration: ''    // These are not typically parsed
                     });
                     setAiFeedback(null); // Clear previous feedback
                     toast({ title: "Resume Parsed!", description: "Your details have been imported." });
@@ -378,6 +448,21 @@ export default function ResumeBuilderPage() {
             </div>
 
             <Separator />
+
+            {/* Projects */}
+            <div className="space-y-4">
+                <h3 className="font-semibold text-lg text-primary px-4">Projects</h3>
+                {resumeData.projects.map(proj => (
+                    <div key={proj.id} className="p-4 border rounded-md space-y-3 relative">
+                        <Button variant="destructive" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={() => removeProject(proj.id)}><Trash2 className="h-4 w-4"/></Button>
+                        <Input placeholder="Project Title" value={proj.title} onChange={e => handleProjectChange(proj.id, 'title', e.target.value)} />
+                        <Textarea placeholder="Describe your project..." value={proj.description} onChange={e => handleProjectChange(proj.id, 'description', e.target.value)} rows={3}/>
+                    </div>
+                ))}
+                <Button variant="outline" onClick={addProject} className="w-full"><Plus className="mr-2"/>Add Project</Button>
+            </div>
+            
+            <Separator />
             
             {/* Education */}
             <div className="space-y-4">
@@ -402,6 +487,22 @@ export default function ResumeBuilderPage() {
             <div className="space-y-2 p-4 border rounded-md">
                 <h3 className="font-semibold text-lg text-primary">Skills</h3>
                 <Textarea placeholder="Enter your skills, separated by commas..." value={resumeData.skills} onChange={e => handleInputChange('skills', e.target.value)} rows={3}/>
+            </div>
+            
+            <Separator />
+            
+            {/* Family Details */}
+            <div className="space-y-2 p-4 border rounded-md">
+                <h3 className="font-semibold text-lg text-primary">Personal Details</h3>
+                <Textarea placeholder="e.g., Father's Name, Marital Status..." value={resumeData.familyDetails} onChange={e => handleInputChange('familyDetails', e.target.value)} rows={3}/>
+            </div>
+            
+            <Separator />
+
+            {/* Declaration */}
+            <div className="space-y-2 p-4 border rounded-md">
+                <h3 className="font-semibold text-lg text-primary">Declaration</h3>
+                <Textarea placeholder="Enter your declaration here..." value={resumeData.declaration} onChange={e => handleInputChange('declaration', e.target.value)} rows={3}/>
             </div>
 
           </div>
