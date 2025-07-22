@@ -26,7 +26,6 @@ import { getApplicants } from "@/lib/applicants";
 import { getSubscriberCount } from "@/lib/subscribers";
 import { JobForm } from "@/components/job-form";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -72,17 +71,11 @@ import {
 } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail } from "lucide-react";
+import { ArrowUpDown, Briefcase, MoreHorizontal, PlusCircle, Trash2, Edit, LogOut, UserPlus, Users, Loader2, FileText, ArrowRight, Mail, Info } from "lucide-react";
 import withAuth from "@/components/with-auth";
-import { logout, getCurrentUserWithRole, addAdminUser, getAllAdminUsers, deleteAdminUser, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
+import { logout, getCurrentUserWithRole, getAllAdminUsers, type UserRole, type AdminUser, ensureSuperAdminExists } from "@/lib/auth";
 
 type AdminStaff = Omit<AdminUser, 'password'>;
-
-const addAdminSchema = z.object({
-  email: z.string().email(),
-  password: z.string().min(6, "Password must be at least 6 characters."),
-});
-type AddAdminFormValues = z.infer<typeof addAdminSchema>;
 
 
 function AdminPage() {
@@ -92,18 +85,12 @@ function AdminPage() {
   const [sorting, setSorting] = useState<SortingState>([]);
   const [currentUser, setCurrentUser] = useState<{ user: FirebaseUser; role: UserRole } | null>(null);
   const [adminStaff, setAdminStaff] = useState<AdminStaff[]>([]);
-  const [isAddingUser, setIsAddingUser] = useState(false);
   const [applicantCount, setApplicantCount] = useState(0);
   const [subscriberCount, setSubscriberCount] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   
   const router = useRouter();
   const { toast } = useToast();
-
-  const addAdminForm = useForm<AddAdminFormValues>({
-    resolver: zodResolver(addAdminSchema),
-    defaultValues: { email: "", password: "" },
-  });
   
   const fetchData = useCallback(async () => {
     setIsLoading(true);
@@ -191,28 +178,6 @@ function AdminPage() {
     fetchData();
   };
 
-  const handleAddAdmin = async (data: AddAdminFormValues) => {
-    setIsAddingUser(true);
-    const result = await addAdminUser(data.email, data.password);
-    if(result.success) {
-      toast({ title: "Success", description: result.message });
-      setAdminStaff(await getAllAdminUsers());
-      addAdminForm.reset();
-    } else {
-      toast({ variant: "destructive", title: "Error", description: result.message });
-    }
-    setIsAddingUser(false);
-  };
-
-  const handleDeleteAdmin = async (uid: string) => {
-    const result = await deleteAdminUser(uid);
-     if(result.success) {
-      toast({ title: "Success", description: result.message });
-      setAdminStaff(await getAllAdminUsers());
-    } else {
-      toast({ variant: "destructive", title: "Error", description: result.message });
-    }
-  };
   
   const jobColumns: ColumnDef<Job>[] = [
     {
@@ -290,19 +255,6 @@ function AdminPage() {
   const adminColumns: ColumnDef<AdminStaff>[] = [
     { accessorKey: "email", header: "Email" },
     { accessorKey: "role", header: "Role", cell: ({row}) => <Badge variant={row.original.role === 'SUPER_ADMIN' ? 'default' : 'secondary'}>{row.original.role}</Badge> },
-    { id: "actions", cell: ({ row }) => {
-        const user = row.original;
-        if (user.role === 'SUPER_ADMIN') return null;
-        return (
-            <AlertDialog>
-                <AlertDialogTrigger asChild><Button variant="destructive" size="sm"><Trash2 className="mr-2 h-4 w-4" />Delete</Button></AlertDialogTrigger>
-                <AlertDialogContent>
-                <AlertDialogHeader><AlertDialogTitle>Delete Admin?</AlertDialogTitle><AlertDialogDescription>This will remove their admin access from the application.</AlertDialogDescription></AlertDialogHeader>
-                <AlertDialogFooter><AlertDialogCancel>Cancel</AlertDialogCancel><AlertDialogAction onClick={() => handleDeleteAdmin(user.uid)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Yes, delete admin</AlertDialogAction></AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-        )
-    }}
   ];
 
   const jobTable = useReactTable({ data: jobs, columns: jobColumns, getCoreRowModel: getCoreRowModel(), getPaginationRowModel: getPaginationRowModel(), onSortingChange: setSorting, getSortedRowModel: getSortedRowModel(), state: { sorting } });
@@ -391,37 +343,33 @@ function AdminPage() {
 
           {currentUser?.role === 'SUPER_ADMIN' && (
               <section className="mb-12">
-                  <div className="grid md:grid-cols-2 gap-8">
-                      <Card>
-                          <CardHeader><CardTitle className="flex items-center gap-2"><Users className="h-6 w-6"/>Manage Admin Staff</CardTitle><CardDescription>Add or remove admin users from the system.</CardDescription></CardHeader>
-                          <CardContent>
-                              <div className="rounded-lg border bg-card text-foreground">
-                                <Table>
-                                <TableHeader>{adminTable.getHeaderGroups().map(hg => <TableRow key={hg.id}>{hg.headers.map(h => <TableHead key={h.id}>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
-                                <TableBody>
-                                    {adminTable.getRowModel().rows?.length ? adminTable.getRowModel().rows.map(row => (
-                                    <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
-                                        {row.getVisibleCells().map(cell => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}
-                                    </TableRow>
-                                    )) : <TableRow><TableCell colSpan={adminColumns.length} className="h-24 text-center">No staff found.</TableCell></TableRow>}
-                                </TableBody>
-                                </Table>
-                              </div>
-                          </CardContent>
-                      </Card>
-                       <Card>
-                          <CardHeader><CardTitle className="flex items-center gap-2"><UserPlus className="h-6 w-6" />Add New Admin</CardTitle><CardDescription>Create a new administrator account.</CardDescription></CardHeader>
-                          <CardContent>
-                            <Form {...addAdminForm}>
-                                <form onSubmit={addAdminForm.handleSubmit(handleAddAdmin)} className="space-y-4">
-                                <FormField control={addAdminForm.control} name="email" render={({ field }) => (<FormItem><FormLabel>Email</FormLabel><FormControl><Input type="email" placeholder="new.admin@example.com" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <FormField control={addAdminForm.control} name="password" render={({ field }) => (<FormItem><FormLabel>Password</FormLabel><FormControl><Input type="password" placeholder="••••••••" {...field} /></FormControl><FormMessage /></FormItem>)} />
-                                <Button type="submit" disabled={isAddingUser}>{isAddingUser && <Loader2 className="mr-2 h-4 w-4 animate-spin"/>}Add Admin</Button>
-                                </form>
-                            </Form>
-                          </CardContent>
-                      </Card>
-                  </div>
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Users className="h-6 w-6"/>Manage Admin Staff</CardTitle>
+                    <CardDescription>View all administrator accounts in the system.</CardDescription>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                      <div className="rounded-lg border bg-card text-foreground">
+                        <Table>
+                        <TableHeader>{adminTable.getHeaderGroups().map(hg => <TableRow key={hg.id}>{hg.headers.map(h => <TableHead key={h.id}>{h.isPlaceholder ? null : flexRender(h.column.columnDef.header, h.getContext())}</TableHead>)}</TableRow>)}</TableHeader>
+                        <TableBody>
+                            {adminTable.getRowModel().rows?.length ? adminTable.getRowModel().rows.map(row => (
+                            <TableRow key={row.id} data-state={row.getIsSelected() && "selected"}>
+                                {row.getVisibleCells().map(cell => <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>)}
+                            </TableRow>
+                            )) : <TableRow><TableCell colSpan={adminColumns.length} className="h-24 text-center">No staff found.</TableCell></TableRow>}
+                        </TableBody>
+                        </Table>
+                      </div>
+                      <div className="p-4 bg-secondary/50 border border-dashed rounded-lg flex items-start gap-3">
+                         <Info className="h-5 w-5 text-primary mt-1 flex-shrink-0"/>
+                         <div>
+                            <h4 className="font-semibold text-foreground">How to Manage Admins</h4>
+                            <p className="text-sm text-muted-foreground mt-1">To ensure security, admin users must be managed directly in the Firebase Console. You can add or remove users from the <a href="https://console.firebase.google.com/" target="_blank" rel="noopener noreferrer" className="text-primary underline hover:no-underline">Authentication</a> section of your project.</p>
+                         </div>
+                      </div>
+                  </CardContent>
+                </Card>
               </section>
           )}
 
@@ -453,3 +401,5 @@ function AdminPage() {
 }
 
 export default withAuth(AdminPage);
+
+    

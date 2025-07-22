@@ -7,7 +7,6 @@ import {
     signOut, 
     onAuthStateChanged,
     createUserWithEmailAndPassword,
-    deleteUser as deleteFbUser,
     type User as FirebaseUser
 } from 'firebase/auth';
 import { doc, setDoc, getDoc, collection, getDocs, deleteDoc, query, where } from 'firebase/firestore';
@@ -30,11 +29,9 @@ export const ensureSuperAdminExists = async () => {
         const querySnapshot = await getDocs(q);
         if (querySnapshot.empty) {
             console.log("Super admin role not found in Firestore, creating placeholder...");
-            // Note: This only creates a placeholder document to indicate the role.
-            // The actual Firebase Auth user must be created manually in the Firebase Console
-            // with the email `super@admin.com`.
-            // When that user logs in, their real UID will be used.
-            // We create this document so other logic knows this email has special permissions.
+            // NOTE: This now only creates a placeholder document. 
+            // The actual user must be created in the Firebase Console.
+            // On first login, the application will associate the real UID with this role.
             await setDoc(doc(usersRef, 'super-admin-placeholder'), {
                 email: superAdminEmail,
                 role: 'SUPER_ADMIN',
@@ -52,40 +49,42 @@ export async function login(email: string, password: string): Promise<{ success:
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     const user = userCredential.user;
     
-    // On successful login, ensure their user document and role are correctly set up.
     const userDocRef = doc(db, 'users', user.uid);
     let docSnap = await getDoc(userDocRef);
 
-    let userRole: UserRole = 'ADMIN'; // Default role for new users
+    let userRole: UserRole = 'ADMIN';
 
+    // Special handling for the super admin
     if (user.email === 'super@admin.com') {
         userRole = 'SUPER_ADMIN';
+        // If the user doc doesn't exist or is a placeholder, create/update it with the real UID
         if (!docSnap.exists() || docSnap.data().isPlaceholder) {
             await setDoc(userDocRef, { email: user.email, role: 'SUPER_ADMIN' });
-            // Check for and remove the placeholder if it exists
+            
+            // Clean up the placeholder doc if it exists
             const placeholderRef = doc(db, 'users', 'super-admin-placeholder');
-            if((await getDoc(placeholderRef)).exists()){
+            const placeholderSnap = await getDoc(placeholderRef);
+            if(placeholderSnap.exists()){
                 await deleteDoc(placeholderRef);
             }
         }
     }
 
+    // Now, get the definitive role from the user's document
     docSnap = await getDoc(userDocRef);
     if (docSnap.exists()) {
-      const data = docSnap.data() as { role: UserRole };
+      const data = docSnap.data();
       return { success: true, role: data.role };
     } else {
-      // This case is for regular admins who are not the super admin.
-      // We'll create their record on first login.
-      // This part might need more robust logic in a real app, e.g. an invite system.
+      // For any other user logging in who doesn't have a doc, we'll create one as a regular admin.
+      // In a production app, you might want a more robust invite system.
       await setDoc(userDocRef, { email: user.email, role: 'ADMIN' });
       return { success: true, role: 'ADMIN' };
     }
   } catch (error: any) {
     console.error("Login error:", error.code, error.message);
-    const errorCode = error.code;
     let message = "An unknown error occurred.";
-    if (errorCode === 'auth/invalid-credential' || errorCode === 'auth/user-not-found' || errorCode === 'auth/wrong-password') {
+    if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         message = "Invalid email or password. Please try again.";
     } else {
         message = error.message;
@@ -120,54 +119,8 @@ export async function getCurrentUserWithRole(): Promise<{user: FirebaseUser; rol
     return null;
 }
 
-// This function is for SUPER_ADMINS to create new ADMIN users.
-export async function addAdminUser(email: string, password: string): Promise<{success: boolean, message: string}> {
-    // IMPORTANT: This function creates a user in Firebase Auth.
-    // The role document in Firestore is created automatically on their first login.
-    try {
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const user = userCredential.user;
-        
-        // We set their role in Firestore immediately upon creation.
-        await setDoc(doc(db, 'users', user.uid), {
-            email: user.email,
-            role: 'ADMIN'
-        });
-
-        return { success: true, message: 'Admin user created successfully.'};
-    } catch (error: any) {
-        if (error.code === 'auth/email-already-in-use') {
-            return { success: false, message: 'This email address is already in use.' };
-        }
-        return { success: false, message: error.message };
-    }
-}
-
-export async function deleteAdminUser(uid: string): Promise<{success: boolean, message: string}> {
-     // This is not possible from the client-side SDK directly for security reasons.
-     // This would typically be an admin SDK call from a secure backend.
-     // For this project, we'll just delete their role doc from Firestore. 
-     // The user will remain in Firebase Auth and must be deleted from the console.
-    try {
-        const currentUser = await getCurrentUserWithRole();
-        if (currentUser?.role !== 'SUPER_ADMIN') {
-            return { success: false, message: 'You do not have permission to delete users.' };
-        }
-        if (currentUser.user.uid === uid) {
-            return { success: false, message: "You cannot delete your own account."};
-        }
-
-        const userDocRef = doc(db, 'users', uid);
-        await deleteDoc(userDocRef);
-        return { success: true, message: 'Admin user role deleted. The user must be manually deleted from the Authentication console.' };
-    } catch (error: any) {
-         return { success: false, message: error.message };
-    }
-}
-
 export async function getAllAdminUsers(): Promise<AdminUser[]> {
     const usersCollectionRef = collection(db, 'users');
-    // Filter out the placeholder account
     const q = query(usersCollectionRef, where('isPlaceholder', '!=', true));
     const querySnapshot = await getDocs(q);
     const users: AdminUser[] = [];
@@ -181,3 +134,5 @@ export async function getAllAdminUsers(): Promise<AdminUser[]> {
     });
     return users;
 }
+
+    
