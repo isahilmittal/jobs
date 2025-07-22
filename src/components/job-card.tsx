@@ -57,7 +57,7 @@ export function JobCard({ job, showAdminActions, onEdit, onDelete, animationDela
     return (
       <Button asChild className="w-full bg-primary/90 hover:bg-primary text-primary-foreground">
         <Link href={`/jobs/${job.id}`}>
-          Apply Now
+          View & Apply
           <FileText className="ml-2 h-4 w-4" />
         </Link>
       </Button>
