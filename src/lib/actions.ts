@@ -50,6 +50,7 @@ export async function addJobAction(formData: FormData) {
 
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath('/jobs');
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -87,6 +88,8 @@ export async function updateJobAction(id: string, formData: FormData) {
 
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath('/jobs');
+    revalidatePath(`/jobs/${id}`);
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -109,6 +112,7 @@ export async function deleteJobAction(id: string) {
 
     revalidatePath('/');
     revalidatePath('/admin');
+    revalidatePath('/jobs');
     return { success: true };
   } catch (error) {
     console.error(error);
@@ -170,4 +174,28 @@ export async function getJobs(): Promise<Job[]> {
     ...job,
     createdAt: new Date(job.createdAt).getTime(),
   }));
+}
+
+// Function to fetch a single job by ID
+export async function getJobById(id: string): Promise<Job | null> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from('jobs')
+    .select('*')
+    .eq('id', id)
+    .single();
+
+  if (error) {
+    console.error(`Error fetching job ${id}:`, error.message);
+    return null;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  return {
+    ...data,
+    createdAt: new Date(data.createdAt).getTime(),
+  };
 }
