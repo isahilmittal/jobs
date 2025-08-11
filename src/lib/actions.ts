@@ -2,7 +2,6 @@
 
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
-import { addJob, deleteJob, updateJob } from '@/lib/store';
 import { extractSkills } from '@/ai/flows/extract-skills';
 import type { Job } from './types';
 import { createClient } from './supabase/server';
@@ -27,8 +26,29 @@ export async function addJobAction(formData: FormData) {
   }
   
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Authentication required to create a job.");
+    }
+      
     const { skills } = await extractSkills({ jobDescription: validatedFields.data.description });
-    await addJob(validatedFields.data, skills);
+    
+    const newJobPayload = {
+        ...validatedFields.data,
+        skills,
+    };
+    
+    const { error } = await supabase
+      .from('jobs')
+      .insert(newJobPayload);
+
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
     revalidatePath('/');
     revalidatePath('/admin');
     return { success: true };
@@ -50,12 +70,19 @@ export async function updateJobAction(id: string, formData: FormData) {
     }
     
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            throw new Error("Authentication required to update a job.");
+        }
+
         const { skills } = await extractSkills({ jobDescription: validatedFields.data.description });
         const updatedJobData: Partial<Job> = {
             ...validatedFields.data,
             skills,
         };
-        await updateJob(id, updatedJobData);
+        await supabase.from('jobs').update(updatedJobData).eq('id', id);
 
         revalidatePath('/');
         revalidatePath('/admin');
@@ -69,7 +96,13 @@ export async function updateJobAction(id: string, formData: FormData) {
 
 export async function deleteJobAction(id: string) {
     try {
-        await deleteJob(id);
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            throw new Error("Authentication required to delete a job.");
+        }
+        await supabase.from('jobs').delete().eq('id', id);
+
         revalidatePath('/');
         revalidatePath('/admin');
         return { success: true };

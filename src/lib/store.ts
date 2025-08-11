@@ -4,10 +4,6 @@ import type { Job } from './types';
 import { createClient } from '@/lib/supabase/server';
 
 const handleSupabaseError = (error: Error, context: string) => {
-  if (error.message.trim().startsWith('<!DOCTYPE html>')) {
-    console.error(`Error in ${context}: Received an HTML response from Supabase. This usually means your NEXT_PUBLIC_SUPABASE_URL is not configured correctly in your .env file. Please ensure it points to your Supabase project's API URL, not the dashboard URL.`);
-    return;
-  }
   console.error(`Error in ${context}:`, error.message);
 };
 
@@ -65,7 +61,6 @@ export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[
 
   if (error) {
     console.error('Supabase error details in addJob:', JSON.stringify(error, null, 2));
-    handleSupabaseError(error, 'addJob');
     throw new Error(`Failed to add job. DB error: ${error.message}`);
   }
 
