@@ -2,6 +2,7 @@ import { getJobs } from '@/lib/actions';
 import JobListings from '@/components/JobListings';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
+import Link from 'next/link';
 
 export default async function Home() {
   const jobs = await getJobs();
@@ -15,11 +16,12 @@ export default async function Home() {
         <p className="max-w-2xl mx-auto text-lg md:text-xl text-muted-foreground mb-8">
           Analyzed.in uses the power of AI to curate and analyze the best tech jobs, so you can find the perfect fit, faster.
         </p>
-        <Button size="lg" className="bg-primary/10 border-2 border-primary text-primary hover:bg-primary/20 hover:text-primary">
-          Start Your Search <ArrowRight className="ml-2 h-5 w-5" />
+        <Button size="lg" asChild className="bg-primary/10 border-2 border-primary text-primary hover:bg-primary/20 hover:text-primary">
+          <Link href="/jobs">
+            Start Your Search <ArrowRight className="ml-2 h-5 w-5" />
+          </Link>
         </Button>
       </section>
-      <JobListings jobs={jobs} />
     </div>
   );
 }
