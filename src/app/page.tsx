@@ -1,11 +1,12 @@
 import { getJobs } from '@/lib/actions';
-import JobListings from '@/components/JobListings';
 import { Button } from '@/components/ui/button';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import JobCard from '@/components/JobCard';
 
 export default async function Home() {
-  const jobs = await getJobs();
+  const allJobs = await getJobs();
+  const recentJobs = allJobs.slice(0, 3);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -21,6 +22,22 @@ export default async function Home() {
             Start Your Search <ArrowRight className="ml-2 h-5 w-5" />
           </Link>
         </Button>
+      </section>
+
+      <section className="py-12">
+        <h2 className="text-3xl font-bold text-center mb-10">Latest Job Openings</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          {recentJobs.map(job => (
+            <JobCard key={job.id} job={job} />
+          ))}
+        </div>
+        <div className="mt-12 text-center">
+            <Button asChild size="lg" variant="ghost">
+                <Link href="/jobs">
+                    View All Jobs <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+            </Button>
+        </div>
       </section>
     </div>
   );
