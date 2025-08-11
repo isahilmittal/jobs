@@ -8,7 +8,7 @@ export function Logo() {
         <Briefcase className="h-6 w-6 text-primary" />
       </div>
       <span className="text-xl font-bold text-foreground">
-        Job<span className="text-primary">Scout</span>
+        Analyzed<span className="text-primary">.in</span>
       </span>
     </Link>
   );

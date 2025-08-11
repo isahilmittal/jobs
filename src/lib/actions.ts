@@ -94,7 +94,7 @@ export async function loginAction(formData: FormData) {
     };
   }
   
-  const supabase = createClient();
+  const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(validatedFields.data);
 
   if (error) {
@@ -108,7 +108,7 @@ export async function loginAction(formData: FormData) {
 }
 
 export async function logoutAction() {
-    const supabase = createClient();
+    const supabase = await createClient();
     await supabase.auth.signOut();
     redirect('/login');
 }

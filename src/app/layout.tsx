@@ -6,7 +6,7 @@ import Header from '@/components/Header';
 import { createClient } from './../lib/supabase/server';
 
 export const metadata: Metadata = {
-  title: 'JobScout',
+  title: 'Analyzed.in',
   description: 'A modern jobs curator analyzed by AI.',
 };
 
@@ -15,7 +15,7 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   const isLoggedIn = user !== null;
 

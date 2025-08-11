@@ -12,7 +12,7 @@ const handleSupabaseError = (error: Error, context: string) => {
 };
 
 export async function getJobs(): Promise<Job[]> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('jobs')
     .select('*')
@@ -31,7 +31,7 @@ export async function getJobs(): Promise<Job[]> {
 }
 
 export async function getJobById(id: string): Promise<Job | undefined> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase.from('jobs').select('*').eq('id', id).single();
   
     if (error) {
@@ -51,7 +51,7 @@ export async function getJobById(id: string): Promise<Job | undefined> {
 
 
 export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[]): Promise<Job> {
-  const supabase = createClient();
+  const supabase = await createClient();
   const newJobPayload = {
     ...job,
     skills,
@@ -75,7 +75,7 @@ export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[
 }
 
 export async function updateJob(id: string, updatedJob: Partial<Job>): Promise<Job | null> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { data, error } = await supabase
         .from('jobs')
         .update(updatedJob)
@@ -95,7 +95,7 @@ export async function updateJob(id: string, updatedJob: Partial<Job>): Promise<J
 }
 
 export async function deleteJob(id: string): Promise<boolean> {
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.from('jobs').delete().eq('id', id);
 
     if (error) {
