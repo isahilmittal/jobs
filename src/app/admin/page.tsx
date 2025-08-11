@@ -1,4 +1,4 @@
-import { getJobs } from '@/lib/store';
+import { getJobs } from '@/lib/actions';
 import JobForm from '@/components/JobForm';
 import AdminJobList from '@/components/AdminJobList';
 import { addJobAction } from '@/lib/actions';

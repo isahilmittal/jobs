@@ -1,4 +1,4 @@
-import { getJobs } from '@/lib/store';
+import { getJobs } from '@/lib/actions';
 import JobListings from '@/components/JobListings';
 
 export default async function Home() {
