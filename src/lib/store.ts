@@ -64,8 +64,9 @@ export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[
     .single();
 
   if (error) {
+    console.error('Supabase error details in addJob:', JSON.stringify(error, null, 2));
     handleSupabaseError(error, 'addJob');
-    throw new Error('Failed to add job.');
+    throw new Error(`Failed to add job. DB error: ${error.message}`);
   }
 
   return {

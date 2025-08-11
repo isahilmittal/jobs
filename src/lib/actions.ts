@@ -34,7 +34,8 @@ export async function addJobAction(formData: FormData) {
     return { success: true };
   } catch (error) {
     console.error(error);
-    return { error: 'Failed to create job.' };
+    const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred.';
+    return { error: `Failed to create job. Reason: ${errorMessage}` };
   }
 }
 
