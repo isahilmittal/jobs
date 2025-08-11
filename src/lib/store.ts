@@ -11,7 +11,7 @@ export async function getJobs(): Promise<Job[]> {
     .order('createdAt', { ascending: false });
 
   if (error) {
-    console.error('Error fetching jobs:', error);
+    console.error('Error fetching jobs:', error.message);
     return [];
   }
 
@@ -27,7 +27,7 @@ export async function getJobById(id: string): Promise<Job | undefined> {
     const { data, error } = await supabase.from('jobs').select('*').eq('id', id).single();
   
     if (error) {
-      console.error(`Error fetching job with id ${id}:`, error);
+      console.error(`Error fetching job with id ${id}:`, error.message);
       return undefined;
     }
 
@@ -56,7 +56,7 @@ export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[
     .single();
 
   if (error) {
-    console.error('Error adding job:', error);
+    console.error('Error adding job:', error.message);
     throw new Error('Failed to add job.');
   }
 
@@ -76,7 +76,7 @@ export async function updateJob(id: string, updatedJob: Partial<Job>): Promise<J
         .single();
     
     if (error) {
-        console.error('Error updating job:', error);
+        console.error('Error updating job:', error.message);
         return null;
     }
     
@@ -91,7 +91,7 @@ export async function deleteJob(id: string): Promise<boolean> {
     const { error } = await supabase.from('jobs').delete().eq('id', id);
 
     if (error) {
-        console.error('Error deleting job:', error);
+        console.error('Error deleting job:', error.message);
         return false;
     }
 
