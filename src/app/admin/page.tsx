@@ -36,7 +36,7 @@ export default async function AdminPage() {
             <CardHeader>
                 <CardTitle>Manage Jobs</CardTitle>
                 <CardDescription>Edit or delete existing job listings.</CardDescription>
-            </Header>
+            </CardHeader>
             <CardContent>
                 <AdminJobList jobs={jobs} />
             </CardContent>
