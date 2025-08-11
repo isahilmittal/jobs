@@ -60,6 +60,13 @@ export async function addJobAction(formData: FormData) {
 }
 
 export async function updateJobAction(id: string, formData: FormData) {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        throw new Error("Authentication required to update a job.");
+    }
+
     const values = Object.fromEntries(formData.entries());
     const validatedFields = jobSchema.safeParse(values);
 
@@ -70,19 +77,13 @@ export async function updateJobAction(id: string, formData: FormData) {
     }
     
     try {
-        const supabase = await createClient();
-        const { data: { user } } = await supabase.auth.getUser();
-
-        if (!user) {
-            throw new Error("Authentication required to update a job.");
-        }
-
         const { skills } = await extractSkills({ jobDescription: validatedFields.data.description });
         const updatedJobData: Partial<Job> = {
             ...validatedFields.data,
             skills,
         };
-        await supabase.from('jobs').update(updatedJobData).eq('id', id);
+        const { error } = await supabase.from('jobs').update(updatedJobData).eq('id', id);
+        if (error) throw error;
 
         revalidatePath('/');
         revalidatePath('/admin');
@@ -101,7 +102,8 @@ export async function deleteJobAction(id: string) {
         if (!user) {
             throw new Error("Authentication required to delete a job.");
         }
-        await supabase.from('jobs').delete().eq('id', id);
+        const { error } = await supabase.from('jobs').delete().eq('id', id);
+        if (error) throw error;
 
         revalidatePath('/');
         revalidatePath('/admin');
