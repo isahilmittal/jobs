@@ -27,11 +27,11 @@ export default function JobCard({ job }: JobCardProps) {
 
 
   return (
-    <Card className="flex flex-col h-full transform hover:-translate-y-1 transition-transform duration-300 ease-in-out shadow-md hover:shadow-xl">
+    <Card className="flex flex-col h-full bg-secondary/30 hover:bg-secondary/50 transition-colors duration-300 group relative border-2 border-transparent hover:border-primary/50">
       <CardHeader>
         <div className='flex justify-between items-start'>
-          <CardTitle className="text-xl">{job.title}</CardTitle>
-          <Badge variant="secondary">{timeAgo(job.createdAt)}</Badge>
+          <CardTitle className="text-xl group-hover:text-primary transition-colors">{job.title}</CardTitle>
+          <Badge variant="outline" className="border-primary/50 text-primary/80">{timeAgo(job.createdAt)}</Badge>
         </div>
         <div className="flex items-center gap-4 text-muted-foreground pt-2">
             <div className="flex items-center gap-2">
@@ -48,7 +48,7 @@ export default function JobCard({ job }: JobCardProps) {
         <p className="text-muted-foreground line-clamp-3 mb-4">{job.description}</p>
         <div className="flex flex-wrap gap-2">
           {job.skills.slice(0, 5).map(skill => (
-            <Badge key={skill} variant="outline" className="bg-primary/5 border-primary/20 text-primary">
+            <Badge key={skill} variant="secondary" className="bg-primary/10 text-primary hover:bg-primary/20">
               {skill}
             </Badge>
           ))}

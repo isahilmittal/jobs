@@ -28,21 +28,21 @@ export default function JobListings({ jobs }: JobListingsProps) {
 
   return (
     <div>
-      <div className="mb-8 max-w-lg mx-auto">
+      <div className="mb-12 max-w-2xl mx-auto">
         <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
                 type="text"
                 placeholder="Search by title, company, or skill..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
-                className="w-full pl-10 py-6 text-base rounded-full shadow-sm"
+                className="w-full pl-12 py-7 text-lg rounded-full bg-secondary/30 border-2 border-border focus:border-primary transition-colors"
             />
         </div>
       </div>
 
       {filteredJobs.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredJobs.map(job => (
             <JobCard key={job.id} job={job} />
           ))}
