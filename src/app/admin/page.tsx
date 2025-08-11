@@ -3,8 +3,17 @@ import JobForm from '@/components/JobForm';
 import AdminJobList from '@/components/AdminJobList';
 import { addJobAction } from '@/lib/actions';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
 export default async function AdminPage() {
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+  
   const jobs = await getJobs();
 
   return (
@@ -27,7 +36,7 @@ export default async function AdminPage() {
             <CardHeader>
                 <CardTitle>Manage Jobs</CardTitle>
                 <CardDescription>Edit or delete existing job listings.</CardDescription>
-            </CardHeader>
+            </Header>
             <CardContent>
                 <AdminJobList jobs={jobs} />
             </CardContent>

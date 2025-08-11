@@ -5,6 +5,8 @@ import { revalidatePath } from 'next/cache';
 import { addJob, deleteJob, updateJob } from '@/lib/store';
 import { extractSkills } from '@/ai/flows/extract-skills';
 import type { Job } from './types';
+import { createClient } from './supabase/server';
+import { redirect } from 'next/navigation';
 
 const jobSchema = z.object({
   title: z.string().min(2, 'Title must be at least 2 characters.'),
@@ -74,4 +76,39 @@ export async function deleteJobAction(id: string) {
         console.error(error);
         return { error: 'Failed to delete job.' };
     }
+}
+
+
+const loginSchema = z.object({
+  email: z.string().email(),
+  password: z.string().min(6, 'Password must be at least 6 characters.'),
+});
+
+export async function loginAction(formData: FormData) {
+  const values = Object.fromEntries(formData.entries());
+  const validatedFields = loginSchema.safeParse(values);
+
+  if (!validatedFields.success) {
+    return {
+      error: 'Invalid email or password format.',
+    };
+  }
+  
+  const supabase = createClient();
+  const { error } = await supabase.auth.signInWithPassword(validatedFields.data);
+
+  if (error) {
+    return {
+        error: error.message,
+    };
+  }
+
+  revalidatePath('/admin');
+  redirect('/admin');
+}
+
+export async function logoutAction() {
+    const supabase = createClient();
+    await supabase.auth.signOut();
+    redirect('/login');
 }
