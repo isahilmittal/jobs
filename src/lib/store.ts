@@ -3,6 +3,14 @@
 import type { Job } from './types';
 import { createClient } from '@/lib/supabase/server';
 
+const handleSupabaseError = (error: Error, context: string) => {
+  if (error.message.trim().startsWith('<!DOCTYPE html>')) {
+    console.error(`Error in ${context}: Received an HTML response from Supabase. This usually means your NEXT_PUBLIC_SUPABASE_URL is not configured correctly in your .env file. Please ensure it points to your Supabase project's API URL, not the dashboard URL.`);
+    return;
+  }
+  console.error(`Error in ${context}:`, error.message);
+};
+
 export async function getJobs(): Promise<Job[]> {
   const supabase = createClient();
   const { data, error } = await supabase
@@ -11,7 +19,7 @@ export async function getJobs(): Promise<Job[]> {
     .order('createdAt', { ascending: false });
 
   if (error) {
-    console.error('Error fetching jobs:', error.message);
+    handleSupabaseError(error, 'getJobs');
     return [];
   }
 
@@ -27,7 +35,7 @@ export async function getJobById(id: string): Promise<Job | undefined> {
     const { data, error } = await supabase.from('jobs').select('*').eq('id', id).single();
   
     if (error) {
-      console.error(`Error fetching job with id ${id}:`, error.message);
+      handleSupabaseError(error, `getJobById (id: ${id})`);
       return undefined;
     }
 
@@ -56,7 +64,7 @@ export async function addJob(job: Omit<Job, 'id' | 'createdAt'>, skills: string[
     .single();
 
   if (error) {
-    console.error('Error adding job:', error.message);
+    handleSupabaseError(error, 'addJob');
     throw new Error('Failed to add job.');
   }
 
@@ -76,7 +84,7 @@ export async function updateJob(id: string, updatedJob: Partial<Job>): Promise<J
         .single();
     
     if (error) {
-        console.error('Error updating job:', error.message);
+        handleSupabaseError(error, `updateJob (id: ${id})`);
         return null;
     }
     
@@ -91,7 +99,7 @@ export async function deleteJob(id: string): Promise<boolean> {
     const { error } = await supabase.from('jobs').delete().eq('id', id);
 
     if (error) {
-        console.error('Error deleting job:', error.message);
+        handleSupabaseError(error, `deleteJob (id: ${id})`);
         return false;
     }
 
