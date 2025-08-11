@@ -33,7 +33,7 @@ import { Edit, Trash2 } from 'lucide-react';
 import type { Job } from '@/lib/types';
 import JobForm from './JobForm';
 import { deleteJobAction, updateJobAction } from '@/lib/actions';
-import { useToast } from './ui/use-toast';
+import { useToast } from '@/hooks/use-toast';
 
 interface AdminJobListProps {
   jobs: Job[];
