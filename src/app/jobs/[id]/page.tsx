@@ -1,10 +1,12 @@
-import { getJobById } from '@/lib/actions';
+import { getJobById, getAllBlogs } from '@/lib/actions';
 import { notFound } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Briefcase, MapPin, ArrowRight, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { findRelevantBlogs } from '@/ai/flows/find-relevant-blogs';
+import BlogCard from '@/components/BlogCard';
 
 interface JobDetailsPageProps {
   params: {
@@ -33,6 +35,13 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   if (!job) {
     notFound();
   }
+
+  const allBlogs = await getAllBlogs();
+  const relevantBlogs = await findRelevantBlogs({
+    jobTitle: job.title,
+    jobSkills: job.skills,
+    blogs: allBlogs,
+  });
 
   return (
     <div className="container mx-auto px-4 py-12 max-w-4xl">
@@ -86,6 +95,17 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                 </Button>
             </CardFooter>
         </Card>
+
+        {relevantBlogs.length > 0 && (
+            <section className="py-16">
+                <h2 className="text-3xl font-bold mb-10 text-center">Further Reading</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {relevantBlogs.map(blog => (
+                    <BlogCard key={blog.id} blog={blog} />
+                ))}
+                </div>
+            </section>
+        )}
     </div>
   );
 }

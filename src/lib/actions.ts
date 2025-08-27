@@ -200,7 +200,7 @@ export async function getJobById(id: string): Promise<Job | null> {
   };
 }
 
-// Function to fetch all blogs
+// Function to fetch recent blogs
 export async function getBlogs(): Promise<Blog[]> {
     const supabase = await createClient();
     const { data, error } = await supabase
@@ -211,6 +211,26 @@ export async function getBlogs(): Promise<Blog[]> {
   
     if (error) {
       console.error('Error fetching blogs:', error.message);
+      return [];
+    }
+  
+    return data.map(blog => ({
+        ...blog,
+        imageUrl: blog.image_url,
+        createdAt: new Date(blog.createdAt).getTime(),
+    }));
+}
+
+// Function to fetch all blogs
+export async function getAllBlogs(): Promise<Blog[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('createdAt', { ascending: false });
+  
+    if (error) {
+      console.error('Error fetching all blogs:', error.message);
       return [];
     }
   
