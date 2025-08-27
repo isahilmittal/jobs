@@ -3,7 +3,7 @@
 import { z } from 'zod';
 import { revalidatePath } from 'next/cache';
 import { extractSkills } from '@/ai/flows/extract-skills';
-import type { Job } from './types';
+import type { Job, Blog } from './types';
 import { createClient } from './supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -198,4 +198,25 @@ export async function getJobById(id: string): Promise<Job | null> {
     ...data,
     createdAt: new Date(data.createdAt).getTime(),
   };
+}
+
+// Function to fetch all blogs
+export async function getBlogs(): Promise<Blog[]> {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from('blogs')
+      .select('*')
+      .order('createdAt', { ascending: false })
+      .limit(3);
+  
+    if (error) {
+      console.error('Error fetching blogs:', error.message);
+      return [];
+    }
+  
+    return data.map(blog => ({
+        ...blog,
+        imageUrl: blog.image_url,
+        createdAt: new Date(blog.createdAt).getTime(),
+    }));
 }
